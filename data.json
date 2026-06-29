@@ -15,7 +15,13 @@
     }
   ],
   "curUser": "bnof2ogxj",
-  "cycle": {},
+  "cycle": {
+    "bnof2ogxj": {
+      "lps": "2026-06-25",
+      "cl": 28,
+      "pl": 5
+    }
+  },
   "logs": {},
   "couples": [],
   "notifs": {},
