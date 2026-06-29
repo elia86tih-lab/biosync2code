@@ -581,7 +581,7 @@ let _ghToken=localStorage.getItem('biosync_gh_token')||'';
 let _ghRepo=localStorage.getItem('biosync_gh_repo')||'';
 let _ghPath=localStorage.getItem('biosync_gh_path')||'data.json';
 let _ghBranch=localStorage.getItem('biosync_gh_branch')||'main';
-let _nlHook=localStorage.getItem('biosync_nl_hook')||'';
+
 let _ghTimer2=null,_ghPending=null;
 async function ghDirectSave(json){
   const t=_ghToken,r=_ghRepo;
@@ -603,20 +603,16 @@ async function ghDirectSave(json){
 function save(){let j=JSON.stringify(S);localStorage.setItem(LS,j);fetch(SVR+'/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:j}).catch(()=>{});ghDirectSave(S)}
 async function loadFromServer(){var loc=localStorage.getItem(LS);if(loc)return;try{let r=await fetch(SVR+'/api/data');if(!r.ok)return;let d=await r.json();if(d&&Object.keys(d).length){Object.assign(S,d);localStorage.setItem(LS,JSON.stringify(S))}}catch(e){}}
 
-function triggerNetlifyDeploy(){if(!_nlHook)return;fetch(_nlHook,{method:'POST'}).catch(()=>{})}
 // Periodic auto-save to GitHub every 60s
-let _autoSaveTimer=setInterval(()=>{if(S.curUser){save();triggerNetlifyDeploy()}},60000);
+let _autoSaveTimer=setInterval(()=>{if(S.curUser)save()},60000);
 function setupSync(){
   let tk=prompt('Введите GitHub Personal Access Token (с правами repo):',_ghToken);
   if(tk===null)return;
   let rp=prompt('Введите репозиторий (owner/repo):',_ghRepo||'elia86tih-lab/biosync');
   if(rp===null)return;
-  let nl=prompt('Введите Netlify Deploy Hook URL (необязательно):',_nlHook);
-  if(nl===null)nl=_nlHook;
-  _ghToken=tk;_ghRepo=rp;_nlHook=nl;
+  _ghToken=tk;_ghRepo=rp;
   localStorage.setItem('biosync_gh_token',tk);
   localStorage.setItem('biosync_gh_repo',rp);
-  localStorage.setItem('biosync_nl_hook',nl);
   renderFemaleDash();renderMaleDash();
 }
 // ====== SUBSCRIPTIONS ======
@@ -1983,10 +1979,6 @@ function fSettings(g){
       <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--text2)">
         <span style="width:8px;height:8px;border-radius:50%;background:${_ghToken?'var(--green)':'#888'}"></span>
         <span>GitHub: ${_ghToken?'подключено ('+_ghRepo+')':'не настроено'}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--text2);margin-top:6px">
-        <span style="width:8px;height:8px;border-radius:50%;background:${_nlHook?'var(--green)':'#888'}"></span>
-        <span>Netlify: ${_nlHook?'подключено':'не настроено'}</span>
       </div>
       <div style="font-size:.75rem;color:var(--text3);margin-top:8px">Данные сохраняются автоматически каждые 60 секунд.</div>
       <button class="btn btn-s btn-sm btn-block mt-2" onclick="setupSync()" style="font-size:.82rem">⚙️ Настроить синхронизацию</button>
