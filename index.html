@@ -393,6 +393,7 @@ input,button,select,textarea{font-family:inherit}
         <label for="login-remember" style="font-weight:400;cursor:pointer;font-size:.9rem">Запомнить устройство</label>
       </div>
       <button class="btn btn-p btn-lg btn-block" onclick="handleLogin()">Войти</button>
+      <button class="btn btn-g btn-block mt-2" onclick="navigate('landing')"><i data-lucide="arrow-left" class="lx lx-sm"></i> Назад</button>
       <div class="social-divider"><span>или войти через</span></div>
       <div class="social-login-row">
         <button class="btn-social" onclick="socialLogin('google')" title="Google"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg></button>
@@ -421,6 +422,7 @@ input,button,select,textarea{font-family:inherit}
       <div class="fg"><label>Email</label><input type="email" id="rf-email" placeholder="email@example.com"></div>
       <div class="fg"><label>Пароль</label><input type="password" id="rf-pass" placeholder="Минимум 6 символов"></div>
       <button class="btn btn-p btn-lg btn-block" onclick="handleRegFemale()">Создать аккаунт</button>
+      <button class="btn btn-g btn-block mt-2" onclick="navigate('landing')"><i data-lucide="arrow-left" class="lx lx-sm"></i> Назад</button>
       <div class="auth-link">Уже есть аккаунт? <a onclick="navigate('login')">Войти</a></div>
     </div>
   </div>
@@ -435,6 +437,7 @@ input,button,select,textarea{font-family:inherit}
         <div class="fg"><label>Длина месячных (дни)</label><input type="number" id="rf-period-len" value="5" min="3" max="10"><div class="hint">Обычно 3–7 дней</div></div>
       </div>
       <button class="btn btn-p btn-lg btn-block mt-2" onclick="handleCycleSetup()">Сохранить и продолжить</button>
+      <button class="btn btn-g btn-block mt-2" onclick="hide('rf-page2');show('rf-page1')"><i data-lucide="arrow-left" class="lx lx-sm"></i> Назад</button>
       <div class="text-center mt-2"><button class="btn btn-g" onclick="skipCycleSetup()">Пропустить — настрою позже</button></div>
     </div>
   </div>
@@ -450,6 +453,7 @@ input,button,select,textarea{font-family:inherit}
       <div class="fg"><label>Email</label><input type="email" id="rm-email" placeholder="email@example.com"></div>
       <div class="fg"><label>Пароль</label><input type="password" id="rm-pass" placeholder="Минимум 6 символов"></div>
       <button class="btn btn-p btn-lg btn-block" onclick="handleRegMale()">Создать аккаунт</button>
+      <button class="btn btn-g btn-block mt-2" onclick="navigate('landing')"><i data-lucide="arrow-left" class="lx lx-sm"></i> Назад</button>
       <div class="auth-link">Уже есть аккаунт? <a onclick="navigate('login')">Войти</a></div>
     </div>
   </div>
@@ -460,6 +464,7 @@ input,button,select,textarea{font-family:inherit}
       <div id="rm-err2" class="err" style="display:none"></div>
       <div class="fg"><label>Код пары</label><input type="text" id="rm-code" placeholder="XXXXXX" style="text-align:center;font-size:1.3rem;letter-spacing:.3rem;font-family:monospace" maxlength="6" oninput="this.value=this.value.toUpperCase()"></div>
       <button class="btn btn-p btn-lg btn-block" onclick="handleConnect()">Подключиться</button>
+      <button class="btn btn-g btn-block mt-2" onclick="hide('rm-page2');show('rm-page1')"><i data-lucide="arrow-left" class="lx lx-sm"></i> Назад</button>
       <div class="text-center mt-2"><button class="btn btn-g" onclick="finishMaleReg()">Пропустить — подключусь позже</button></div>
     </div>
   </div>
@@ -2033,6 +2038,9 @@ const _T={
 'm_sonya_tip_title':{ru:'💡 Совет Сони на сегодня',en:'💡 Sonya\'s tip for today'},
 'footer_contact':{ru:'Связаться с разработчиком',en:'Contact developer',zh:'联系开发者',hi:'डेवलपर से संपर्क करें',es:'Contactar con el desarrollador',ar:'تواصل مع المطور',fr:'Contacter le développeur',bn:'ডেভেলপারের সাথে যোগাযোগ',pt:'Contatar o desenvolvedor',ur:'ڈویلپر سے رابطہ',de:'Entwickler kontaktieren',id:'Hubungi pengembang',ja:'開発者に連絡',tr:'Geliştirici ile iletişim',ko:'개발자에게 연락'},
 'footer_tagline':{ru:'BioSync — Код пары',en:'BioSync — Couple Code',zh:'BioSync — 情侣密码',hi:'BioSync — कपल कोड',es:'BioSync — Código de pareja',ar:'BioSync — رمز الزوجين',fr:'BioSync — Code de couple',bn:'BioSync — কাপল কোড',pt:'BioSync — Código do casal',ur:'BioSync — جوڑے کا کوڈ',de:'BioSync — Paarcode',id:'BioSync — Kode Pasangan',ja:'BioSync — カップルコード',tr:'BioSync — Çift kodu',ko:'BioSync — 커플 코드'},
+'invite_banner':{ru:'Вас пригласили в пару!',en:'You\'ve been invited to a couple!',zh:'您被邀请加入情侣！',hi:'आपको एक जोड़े में आमंत्रित किया गया है!',es:'¡Te invitaron a una pareja!',ar:'تمت دعوتك للانضمام إلى زوجين!',fr:'Vous avez été invité à un couple !',bn:'আপনাকে একটি কাপলে আমন্ত্রণ জানানো হয়েছে!',pt:'Você foi convidado para um casal!',ur:'آپ کو ایک جوڑے میں مدعو کیا گیا ہے!',de:'Sie wurden zu einem Paar eingeladen!',id:'Anda diundang ke pasangan!',ja:'カップルに招待されました！',tr:'Bir çifte davet edildiniz!',ko:'커플에 초대되었습니다!'},
+'invite_create_or_login':{ru:'Создайте аккаунт или войдите',en:'Create account or log in',zh:'创建账号或登录',hi:'अकाउंट बनाएं या लॉग इन करें',es:'Crea cuenta o inicia sesión',ar:'أنشئ حسابًا أو سجل الدخول',fr:'Créez un compte ou connectez-vous',bn:'অ্যাকাউন্ট তৈরি করুন বা লগ ইন করুন',pt:'Crie conta ou entre',ur:'اکاؤنٹ بنائیں یا لاگ ان کریں',de:'Konto erstellen oder anmelden',id:'Buat akun atau masuk',ja:'アカウントを作成またはログイン',tr:'Hesap oluştur veya giriş yap',ko:'계정 만들기 또는 로그인'},
+'back':{ru:'Назад',en:'Back',zh:'返回',hi:'वापस',es:'Atrás',ar:'رجوع',fr:'Retour',bn:'ফিরে যান',pt:'Voltar',ur:'واپس',de:'Zurück',id:'Kembali',ja:'戻る',tr:'Geri',ko:'뒤로'},
 };
 function _(key,...args){
   var t=(_T[key]&&_T[key][_lang])||(_T[key]&&_T[key].ru)||key;
@@ -2084,18 +2092,23 @@ function updateAuthTexts(){
     'p-login .auth-link':'no_account',
     'p-login .auth-link a':'register_link',
     'p-login button.btn-p':'login_btn',
+    'p-login button.btn-g.btn-block':'back',
     'p-register-female #rf-page1 h2':'reg_title',
     'p-register-female #rf-page1 p':'reg_f_sub',
     'p-register-female #rf-page1 button.btn-p':'create_btn',
+    'p-register-female #rf-page1 button.btn-g.btn-block':'back',
     'p-register-female #rf-page2 h2':'cycle_setup',
     'p-register-female #rf-page2 p':'cycle_setup_sub',
     'p-register-female #rf-page2 button.btn-p':'cycle_save',
+    'p-register-female #rf-page2 button.btn-g.btn-block':'back',
     'p-register-male #rm-page1 h2':'reg_title',
     'p-register-male #rm-page1 p':'reg_m_sub',
     'p-register-male #rm-page1 button.btn-p':'create_btn',
+    'p-register-male #rm-page1 button.btn-g.btn-block':'back',
     'p-register-male #rm-page2 h2':'connect_title',
     'p-register-male #rm-page2 p':'connect_sub',
-    'p-register-male #rm-page2 button.btn-p':'connect_btn'
+    'p-register-male #rm-page2 button.btn-p':'connect_btn',
+    'p-register-male #rm-page2 button.btn-g.btn-block':'back'
   };
   for(var sel in map){
     var key=map[sel];
@@ -3148,9 +3161,31 @@ function init(){
   lucide.createIcons(document.getElementById('p-landing'));
   updateLandingTexts();
   updateAuthTexts();
-  // Load from server, then try auto-login
+  // Show landing immediately
+  navigate('landing');
+  // If already logged in locally, go straight to dashboard
+  if(S.curUser){
+    let u=S.users.find(x=>x.id===S.curUser);
+    if(u){navigate(u.gender==='female'?'dash-female':'dash-male')}
+    else{S.curUser=null;save()}
+  }
+  // Show connect invite banner if pending
+  if(!S.curUser&&S._pendingConnect){
+    let b=document.getElementById('p-landing');
+    if(b){
+      let invite=document.createElement('div');
+      invite.id='connect-invite';
+      invite.style.cssText='position:fixed;top:0;left:0;right:0;z-index:100;padding:14px;text-align:center;background:linear-gradient(135deg,var(--rose),var(--roseD));color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;box-shadow:0 4px 20px rgba(208,128,128,.3)';
+      invite.innerHTML='<i data-lucide="link" class="lx lx-sm"></i> '+_('invite_banner')+' <span style="text-decoration:underline">'+_('invite_create_or_login')+'</span> →';lucide.createIcons(invite);
+      invite.onclick=()=>{navigate('register-male')};
+      b.appendChild(invite);
+    }
+  }
+  // Load from server (async, non-blocking) — merge data for cross-device sync
   loadFromServer().then(function(){
-    // After server data loaded, try auto-login
+    // After server data loaded, try auto-login ONLY if user is still on landing
+    let onLanding=document.getElementById('p-landing').classList.contains('active');
+    if(!onLanding)return; // user already navigated manually — don't yank them back
     if(!S.curUser){
       try{var remembered=JSON.parse(localStorage.getItem('biosync_remember')||'null')}catch(e){localStorage.removeItem('biosync_remember')}
       if(remembered&&remembered.userId){
@@ -3162,20 +3197,7 @@ function init(){
     if(S.curUser){
       let u=S.users.find(x=>x.id===S.curUser);
       if(u)navigate(u.gender==='female'?'dash-female':'dash-male');
-      else{S.curUser=null;save();navigate('landing')}
-    } else {
-      navigate('landing');
-      if(S._pendingConnect){
-        let b=document.getElementById('p-landing');
-        if(b){
-          let invite=document.createElement('div');
-          invite.id='connect-invite';
-          invite.style.cssText='position:fixed;top:0;left:0;right:0;z-index:100;padding:14px;text-align:center;background:linear-gradient(135deg,var(--rose),var(--roseD));color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;box-shadow:0 4px 20px rgba(208,128,128,.3)';
-          invite.innerHTML='<i data-lucide="link" class="lx lx-sm"></i> Вас пригласили в пару! <span style="text-decoration:underline">Создайте аккаунт или войдите</span> →';lucide.createIcons(invite);
-          invite.onclick=()=>{navigate('register-male')};
-          b.appendChild(invite);
-        }
-      }
+      else{S.curUser=null;save()}
     }
     // If tutorial was queued, show it now
     if(S._showTutorial&&S.curUser){
