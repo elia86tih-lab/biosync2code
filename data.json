@@ -30,5 +30,7 @@
   "voice": {},
   "_moodSaved": false,
   "_theme": "light",
-  "_fTab": "settings"
+  "_fTab": "settings",
+  "_voiceTimer": 18,
+  "_voiceSec": 0
 }
