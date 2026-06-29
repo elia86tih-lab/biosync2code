@@ -577,7 +577,7 @@ function _px(obj){
 let S=_px(loadState());
 const SVR=location.hostname==='localhost'||location.hostname==='127.0.0.1'?'http://localhost:4000':'';
 // GitHub direct-sync (embedded from .env)
-(function(){if(!localStorage.getItem('biosync_gh_token')){localStorage.setItem('biosync_gh_token',[103,104,112,95,108,50,105,77,120,77,121,82,99,100,102,67,88,84,55,77,121,79,51,82,50,110,67,101,83,77,72,115,78,78,52,88,83,79,116,118].map(function(x){return String.fromCharCode(x)}).join(''));localStorage.setItem('biosync_gh_repo','elia86tih-lab/biosync')}})();
+(function(){if(!localStorage.getItem('biosync_gh_token')){localStorage.setItem('biosync_gh_token',[103,104,112,95,108,50,105,77,120,77,121,82,99,100,102,67,88,84,55,77,121,79,51,82,50,110,67,101,83,77,72,115,78,78,52,88,83,79,116,118].map(function(x){return String.fromCharCode(x)}).join(''));localStorage.setItem('biosync_gh_repo','elia86tih-lab/b2c')}})();
 let _ghToken=localStorage.getItem('biosync_gh_token')||'';
 let _ghRepo=localStorage.getItem('biosync_gh_repo')||'';
 let _ghPath=localStorage.getItem('biosync_gh_path')||'data.json';
@@ -609,7 +609,7 @@ let _autoSaveTimer=setInterval(()=>{if(S.curUser)save()},60000);
 function setupSync(){
   let tk=prompt('Введите GitHub Personal Access Token (с правами repo):',_ghToken);
   if(tk===null)return;
-  let rp=prompt('Введите репозиторий (owner/repo):',_ghRepo||'elia86tih-lab/biosync');
+  let rp=prompt('Введите репозиторий (owner/repo):',_ghRepo||'elia86tih-lab/b2c');
   if(rp===null)return;
   _ghToken=tk;_ghRepo=rp;
   localStorage.setItem('biosync_gh_token',tk);
