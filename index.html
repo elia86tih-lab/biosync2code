@@ -607,9 +607,9 @@ async function loadFromServer(){var loc=localStorage.getItem(LS);if(loc)return;t
 // Periodic auto-save to GitHub every 60s
 let _autoSaveTimer=setInterval(()=>{if(S.curUser)save()},60000);
 function setupSync(){
-  let tk=prompt('Введите GitHub Personal Access Token (с правами repo):',_ghToken);
+  let tk=prompt(_('setup_gh_token'),_ghToken);
   if(tk===null)return;
-  let rp=prompt('Введите репозиторий (owner/repo):',_ghRepo||'elia86tih-lab/biosync2code');
+  let rp=prompt(_('setup_gh_repo'),_ghRepo||'elia86tih-lab/biosync2code');
   if(rp===null)return;
   _ghToken=tk;_ghRepo=rp;
   localStorage.setItem('biosync_gh_token',tk);
@@ -654,8 +654,8 @@ function voiceUsed(uid){
 function femalePremiumBadge(){
   let s=getSub(S.curUser);
   if(s.plan==='premium'||s.plan==='unlimited')return '';
-  let trial=s.trial?': 7-дневный пробный':'';
-  return `<div class="ps-bar disc mt-2" style="font-size:.85rem;cursor:pointer" onclick="S._fTab='settings';renderFemaleDash()"><span>${ic('sparkles')}</span><span>Бесплатный тариф${trial} — перейти в Premium</span></div>`;
+  let trial=s.trial?': '+_('prem_trial'):'';
+  return `<div class="ps-bar disc mt-2" style="font-size:.85rem;cursor:pointer" onclick="S._fTab='settings';renderFemaleDash()"><span>${ic('sparkles')}</span><span>${_('free_plan')}${trial} — ${_('to_premium')}</span></div>`;
 }
 
 // ====== VOICE "ВЫГОВОРИТЬСЯ" ======
@@ -741,22 +741,22 @@ function openVoiceModal(){
   if(s.plan==='free'&&!s.trial&&q<=0){
     document.getElementById('voice-modal-content').innerHTML=rI(`
       <div style="font-size:3rem;margin-bottom:12px">🎤</div>
-      <h3 style="font-size:1.2rem;margin-bottom:6px">Лимит исчерпан</h3>
-      <p style="color:var(--text2);font-size:.9rem;margin-bottom:16px">На бесплатном тарифе — 1 сессия в месяц. Оформите Premium для безлимитного доступа.</p>
-      <button class="btn btn-p" onclick="closeVoiceModal();S._fTab='settings';renderFemaleDash()">${ic('sparkles')} Перейти в Premium</button>`);
+      <h3 style="font-size:1.2rem;margin-bottom:6px">${_('voice_limit')}</h3>
+      <p style="color:var(--text2);font-size:.9rem;margin-bottom:16px">${_('voice_limit_desc')}</p>
+      <button class="btn btn-p" onclick="closeVoiceModal();S._fTab='settings';renderFemaleDash()">${ic('sparkles')} ${_('to_premium')}</button>`);
     lucide.createIcons(document.getElementById('voice-modal-content'));
     return;
   }
   document.getElementById('voice-modal-content').innerHTML=rI(`
     <div style="font-size:2.5rem;margin-bottom:10px">🎙️</div>
-    <h3 style="font-size:1.2rem;margin-bottom:4px">Я слушаю</h3>
-    <p style="color:var(--text2);font-size:.85rem;margin-bottom:20px">Говори сколько хочешь. Я никуда не спешу.</p>
+    <h3 style="font-size:1.2rem;margin-bottom:4px">${_('voice_listen')}</h3>
+    <p style="color:var(--text2);font-size:.85rem;margin-bottom:20px">${_('voice_prompt')}</p>
     <div style="width:120px;height:120px;border-radius:50%;margin:0 auto 20px;background:linear-gradient(135deg,var(--rose),var(--roseD));display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 30px rgba(208,128,128,.4);animation:voicePulse 1.5s ease-in-out infinite" id="voice-record-btn" onclick="startVoiceRecord()">
       <span style="font-size:3rem;color:#fff;line-height:1">🎤</span>
     </div>
-    <p style="font-size:.8rem;color:var(--text3)" id="voice-status">Нажми, чтобы начать</p>
+    <p style="font-size:.8rem;color:var(--text3)" id="voice-status">${_('voice_start')}</p>
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-g btn-sm" onclick="closeVoiceModal()">Отмена</button>
+      <button class="btn btn-g btn-sm" onclick="closeVoiceModal()">${_('voice_cancel')}</button>
     </div>`);
   lucide.createIcons(document.getElementById('voice-modal-content'));
 }
@@ -769,11 +769,11 @@ function startVoiceRecord(){
   if(!btn||!status)return;
   btn.onclick=null;
   let sec=0;
-  status.textContent='0:00 · Говорите...';
+  status.textContent=_('voice_recording');
   let interval=setInterval(()=>{
     sec++;
     let m=Math.floor(sec/60),s=sec%60;
-    status.textContent=`${m}:${s.toString().padStart(2,'0')} · Говорите...`;
+    status.textContent=m+':'+s.toString().padStart(2,'0')+' · '+_('voice_speaking');
     if(sec>=300){clearInterval(interval);stopVoiceRecord(sec)}
   },1000);
   S._voiceTimer=interval;
@@ -787,7 +787,7 @@ function startVoiceRecord(){
 function stopVoiceRecord(duration){
   let status=document.getElementById('voice-status');
   let btn=document.getElementById('voice-record-btn');
-  if(status)status.textContent='🧠 Анализирую...';
+  if(status)status.textContent=_('voice_analyzing');
   if(btn){btn.style.animation='none';btn.style.background='linear-gradient(135deg,var(--green),#6FA890)'}
   // Simulate AI analysis
   setTimeout(()=>showVoiceResult(duration),800);
@@ -797,7 +797,7 @@ function showVoiceResult(duration){
   saveVoiceSession(analysis,duration);
   let ph=getPhase(S.curUser);
   let stressColor=analysis.stress>70?'#D46060':analysis.stress>40?'#E8B84C':'var(--green)';
-  let stressLabel=analysis.stress>70?'Высокий':analysis.stress>40?'Средний':'Низкий';
+  let stressLabel=analysis.stress>70?_('stress_high'):analysis.stress>40?_('stress_med'):_('stress_low');
   let q=voiceQuota(S.curUser);
   let m=Math.floor(duration/60),s=duration%60;
   let vc=document.getElementById('voice-modal-content');
@@ -807,51 +807,51 @@ function showVoiceResult(duration){
         <span style="font-size:2rem">🎙️</span>
         <div><div style="font-weight:700">Сессия ${new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}</div>
         <div style="color:var(--text2);font-size:.8rem">${m}:${s.toString().padStart(2,'0')}</div></div>
-        ${q<3?`<span style="margin-left:auto;font-size:.75rem;color:var(--text3)">Осталось: ${q} сессии</span>`:''}
+        ${q<3?`<span style="margin-left:auto;font-size:.75rem;color:var(--text3)">${_('sessions_left',q)}</span>`:''}
       </div>
       <!-- Stress level -->
       <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:6px">
-          <span style="color:var(--text2)">Уровень напряжения</span>
+          <span style="color:var(--text2)">${_('stress_level')}</span>
           <span style="font-weight:700;color:${stressColor}">${stressLabel} · ${analysis.stress}%</span>
         </div>
         <div style="height:8px;background:var(--border2);border-radius:8px;overflow:hidden">
           <div style="height:100%;width:${analysis.stress}%;background:${stressColor};border-radius:8px;transition:width 1s ease"></div>
         </div>
-        ${analysis.triggers.length?`<div style="font-size:.75rem;color:var(--text3);margin-top:6px">Пик: «${analysis.triggers[0]}»</div>`:''}
+        ${analysis.triggers.length?`<div style="font-size:.75rem;color:var(--text3);margin-top:6px">${_('voice_peak',analysis.triggers[0])}</div>`:''}
       </div>
       <!-- Emotions -->
       <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px">
-        <div style="font-weight:600;font-size:.85rem;margin-bottom:6px">${ic('brain')} Что чувствуется в речи:</div>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:6px">${ic('brain')} ${_('voice_feelings')}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">${analysis.emotions.map(e=>`<span style="background:var(--roseL);color:var(--roseD);padding:4px 12px;border-radius:50px;font-size:.8rem">${e}</span>`).join('')}</div>
       </div>
       <!-- Phase context -->
       ${ph?`
       <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px">
-        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">${ic('waves')} ${WAVE_NAMES[ph.phaseId]} фаза</div>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">${ic('waves')} ${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])} ${_('phase_word')}</div>
         <p style="font-size:.8rem;color:var(--text2)">${analysis.phaseTip}</p>
       </div>`:''}
       <!-- SOS -->
       <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid rgba(212,96,96,.15)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <span style="font-size:1.2rem">${ic('alert-circle')}</span>
-          <span style="font-weight:600;font-size:.85rem">SOS: здесь и сейчас</span>
+          <span style="font-weight:600;font-size:.85rem">${_('voice_sos')}</span>
         </div>
         <div style="background:var(--card);border-radius:12px;padding:12px;margin-bottom:6px">
           <div style="font-weight:600;font-size:.85rem">${analysis.sosc.t}</div>
           <p style="font-size:.75rem;color:var(--text2);margin-bottom:8px">${analysis.sosc.d}</p>
-          <button class="btn btn-s btn-sm" onclick="alert('${ic('heart')} Практика запущена. Дышите спокойно.')" style="font-size:.8rem">▶ Запустить</button>
+          <button class="btn btn-s btn-sm" onclick="alert('${ic('heart')} '+_('voice_sos_active'))" style="font-size:.8rem">${_('voice_sos_run')}</button>
         </div>
       </div>
       <!-- Recommendation -->
       <div style="background:var(--bg);border-radius:16px;padding:16px;margin-bottom:12px">
-        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">${ic('edit-3')} Рекомендация на сегодня</div>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">${ic('edit-3')} ${_('voice_reco')}</div>
         <p style="font-size:.82rem;color:var(--text2)">${analysis.reco}</p>
       </div>
       <!-- Actions -->
       <div style="display:flex;gap:10px;margin-top:6px">
-        <button class="btn btn-p btn-sm" style="flex:1" onclick="alert('${ic('check')} Сессия сохранена')">${ic('save')} Сохранить</button>
-        <button class="btn btn-g btn-sm" onclick="closeVoiceModal()">Закрыть</button>
+        <button class="btn btn-p btn-sm" style="flex:1" onclick="alert('${ic('check')} '+_('voice_saved'))">${ic('save')} ${_('voice_save')}</button>
+        <button class="btn btn-g btn-sm" onclick="closeVoiceModal()">${_('voice_close')}</button>
       </div>
     </div>`);
   lucide.createIcons(vc);
@@ -924,9 +924,9 @@ function handleLogin(){
   let pass=document.getElementById('login-pass').value;
   let remember=document.getElementById('login-remember').checked;
   err('login-err','');
-  if(!email||!pass){err('login-err','Заполните все поля');return}
+  if(!email||!pass){err('login-err',_('fill_fields'));return}
   let u=S.users.find(x=>x.email===email);
-  if(!u||u.pass!==pass){err('login-err','Неверный email или пароль');return}
+  if(!u||u.pass!==pass){err('login-err',_('wrong_creds'));return}
   S.curUser=u.id;
   if(remember){
     localStorage.setItem('biosync_remember',JSON.stringify({userId:u.id,email:u.email,name:u.name}));
@@ -961,12 +961,12 @@ function handleRegFemale(){
   let email=document.getElementById('rf-email').value.trim();
   let pass=document.getElementById('rf-pass').value;
   err('rf-err1','');
-  if(!name||!email||!pass){err('rf-err1','Заполните все поля');return}
-  if(pass.length<6){err('rf-err1','Пароль минимум 6 символов');return}
+  if(!name||!email||!pass){err('rf-err1',_('fill_fields'));return}
+  if(pass.length<6){err('rf-err1',_('pass_short'));return}
    if(S.users.find(x=>x.email===email)){
-    err('rf-err1','Этот email уже зарегистрирован.');
+    err('rf-err1',_('email_taken'));
     let e=document.getElementById('rf-err1');
-    e.innerHTML+=' <a style="color:var(--rose);font-weight:600;cursor:pointer;text-decoration:underline" onclick="goToLogin(\''+email+'\')">Войти в аккаунт</a>';
+    e.innerHTML+=' <a style="color:var(--rose);font-weight:600;cursor:pointer;text-decoration:underline" onclick="goToLogin(\''+email+'\')">'+_('login_instead')+'</a>';
     return}
   let id=uid();
   S.users.push({id,email,pass,name,gender:'female',priv:{showPhase:true,showDay:true,showCareTips:true,showMood:false}});
@@ -980,8 +980,8 @@ function handleCycleSetup(){
   let cl=parseInt(document.getElementById('rf-cycle-len').value)||28;
   let pl=parseInt(document.getElementById('rf-period-len').value)||5;
   err('rf-err2','');
-  if(!lps){err('rf-err2','Укажите первый день последних месячных');return}
-  if(cl<21||cl>45){err('rf-err2','Некорректная длина цикла');return}
+  if(!lps){err('rf-err2',_('enter_period'));return}
+  if(cl<21||cl>45){err('rf-err2',_('bad_cycle_len'));return}
   S.cycle[S.curUser]={lps,cl,pl};
   save();
   S._showTutorial=1;save();
@@ -997,12 +997,12 @@ function handleRegMale(){
   let email=document.getElementById('rm-email').value.trim();
   let pass=document.getElementById('rm-pass').value;
   err('rm-err1','');
-  if(!name||!email||!pass){err('rm-err1','Заполните все поля');return}
-  if(pass.length<6){err('rm-err1','Пароль минимум 6 символов');return}
+  if(!name||!email||!pass){err('rm-err1',_('fill_fields'));return}
+  if(pass.length<6){err('rm-err1',_('pass_short'));return}
   if(S.users.find(x=>x.email===email)){
-    err('rm-err1','Этот email уже зарегистрирован.');
+    err('rm-err1',_('email_taken'));
     let e=document.getElementById('rm-err1');
-    e.innerHTML+=' <a style="color:var(--rose);font-weight:600;cursor:pointer;text-decoration:underline" onclick="goToLogin(\''+email+'\')">Войти в аккаунт</a>';
+    e.innerHTML+=' <a style="color:var(--rose);font-weight:600;cursor:pointer;text-decoration:underline" onclick="goToLogin(\''+email+'\')">'+_('login_instead')+'</a>';
     return}
   let id=uid();
   S.users.push({id,email,pass,name,gender:'male'});
@@ -1018,10 +1018,10 @@ function handleConnect(){
   let el=document.getElementById('rm-code');
   let code=(el?el.value:'').trim()||(S._pendingConnect||'');
   err('rm-err2','');
-  if(!code){err('rm-err2','Введите код пары');return}
+  if(!code){err('rm-err2',_('enter_code'));return}
   let cp=S.couples.find(x=>x.code===code&&x.status==='pending');
-  if(!cp){err('rm-err2','Код не найден или уже использован');return}
-  if(S.couples.find(x=>x.mId===S.curUser)){err('rm-err2','Вы уже в другой паре');return}
+  if(!cp){err('rm-err2',_('code_not_found'));return}
+  if(S.couples.find(x=>x.mId===S.curUser)){err('rm-err2',_('already_paired'));return}
   cp.mId=S.curUser;
   let f=S.users.find(u=>u.id===cp.fId);
   cp.status='pending';
@@ -1075,8 +1075,8 @@ function showPhaseSplash(uid, cb){
   if(!ph){if(cb)cb();return}
   let fs=getUserFlowerSet(uid);
   let icon=fs.icons[ph.phaseId];
-  let name=PHASES[ph.phaseId].name;
-  let desc=PHASES[ph.phaseId].desc;
+  let name=_pn(ph.phaseId);
+  let desc=_pd(ph.phaseId);
   let div=document.createElement('div');
   div.className='splash-overlay';
   div.id='phase-splash';
@@ -1091,11 +1091,11 @@ function showPhaseSplash(uid, cb){
 
 // ====== TUTORIAL ======
 const TUTORIAL_STEPS = [
-  {icon:'waves',title:'Ваша волна',desc:'Здесь отображается текущая фаза вашего цикла: день, прогноз, иконка фазы. Наводите на разделы — всплывают подсказки.'},
-  {icon:'heart',title:'Саморегуляция',desc:'Практики и техники, которые подобраны под вашу текущую фазу. Помогают чувствовать себя лучше.'},
-  {icon:'message-circle',title:'ИИ-медиатор Соня',desc:'Соня помогает общаться бережнее: даёт прогнозы, медиации, отчёты и SOS-успокоение.'},
-  {icon:'link',title:'Код пары',desc:'Подключите партнёра через код пары — он будет видеть фазу цикла и получать подсказки по заботе.'},
-  {icon:'edit-3',title:'Дневник',desc:'Отмечайте настроение и самочувствие каждый день — это помогает отслеживать цикл.'},
+  {icon:'waves',title:_('tut_wave'),desc:_('tut_wave_desc')},
+  {icon:'heart',title:_('tut_self'),desc:_('tut_self_desc')},
+  {icon:'message-circle',title:_('tut_sonya'),desc:_('tut_sonya_desc')},
+  {icon:'link',title:_('tut_couple'),desc:_('tut_couple_desc')},
+  {icon:'edit-3',title:_('tut_diary'),desc:_('tut_diary_desc')},
 ];
 function showTutorial(onDone){
   let step=S._tutStep||0;
@@ -1105,8 +1105,8 @@ function showTutorial(onDone){
   div.id='tut-overlay';
   div.className='tut-overlay';
   let dots=TUTORIAL_STEPS.map((_,i)=>`<span class="tut-dot ${i===step?'act':''}" onclick="gotoTutStep(${i})"></span>`).join('');
-  let prevBtn=step>0?`<button class="btn btn-s btn-sm" onclick="gotoTutStep(${step-1})">← Назад</button>`:'';
-  let nextBtn=step<TUTORIAL_STEPS.length-1?`<button class="btn btn-p btn-sm" onclick="gotoTutStep(${step+1})">Далее →</button>`:`<button class="btn btn-p btn-sm" onclick="finishTut()">👌 Понятно!</button>`;
+  let prevBtn=step>0?`<button class="btn btn-s btn-sm" onclick="gotoTutStep(${step-1})">${_('tut_back')}</button>`:'';
+  let nextBtn=step<TUTORIAL_STEPS.length-1?`<button class="btn btn-p btn-sm" onclick="gotoTutStep(${step+1})">${_('tut_next')}</button>`:`<button class="btn btn-p btn-sm" onclick="finishTut()">${_('tut_done')}</button>`;
   div.innerHTML=rI(`
     <div class="tut-card">
       <div class="tut-step">${step+1} / ${TUTORIAL_STEPS.length}</div>
@@ -1115,7 +1115,7 @@ function showTutorial(onDone){
       <p>${s.desc}</p>
       <div class="tut-dots">${dots}</div>
       <div class="tut-nav">${prevBtn}${nextBtn}</div>
-      <div class="tut-skip" onclick="finishTut()">Пропустить обучение</div>
+      <div class="tut-skip" onclick="finishTut()">${_('tut_skip')}</div>
     </div>`);
   document.body.appendChild(div);lucide.createIcons(div);
 }
@@ -1142,7 +1142,7 @@ function renderFemaleDash(){
   if(vb)vb.style.display=u&&u.gender==='female'?'inline-flex':'none';
   let tabs=['wave','selfcare','sonya','couple','mood','notif','tariffs','settings'];
   let tabIcons=['waves','heart','message-circle','link','edit-3','bell','sparkles','settings'];
-  let tabNames=['Моя волна','Саморегуляция','Соня','Код пары','Дневник','Уведомления','Тарифы','Настройки'];
+  let tabNames=[_('ftab_wave'),_('ftab_self'),_('ftab_sonya'),_('ftab_couple'),_('ftab_diary'),_('ftab_notifs'),_('ftab_plans'),_('ftab_settings')];
   let activeTab=S._fTab||'wave';
   let th=document.getElementById('df-tabs');
   th.innerHTML=tabs.map((t,i)=>`<button class="tab-btn ${t===activeTab?'act':''}" onclick="S._fTab='${t}';renderFemaleDash()" title="${tabNames[i]}"><span class="tab-icon">${ic(tabIcons[i],'lx-lg')}</span><span class="tab-label">${tabNames[i]}</span></button>`).join('');
@@ -1212,7 +1212,7 @@ function renderWaveSVG(ph, uid){
     let fwx1=(fwStart-1)*dayW;
     let fwx2=(fwEnd-1)*dayW;
     svg+=`<rect x="${fwx1}" y="30" width="${fwx2-fwx1}" height="12" fill="var(--green)" opacity=".18" rx="4"/>`;
-    svg+=`<text x="${(fwx1+fwx2)/2}" y="48" fill="var(--green)" font-size="8" text-anchor="middle" font-weight="600" opacity=".7">🟢 Фертильное окно</text>`;
+    svg+=`<text x="${(fwx1+fwx2)/2}" y="48" fill="var(--green)" font-size="8" text-anchor="middle" font-weight="600" opacity=".7">${_('fertile_win')}</text>`;
     let ovDay=Math.round(14/28*cl);
     let ovx=(ovDay-1)*dayW;
     svg+=`<line x1="${ovx}" y1="30" x2="${ovx}" y2="103" stroke="var(--gold)" stroke-width="1.5" stroke-dasharray="3,3" opacity=".7"/>`;
@@ -1224,12 +1224,12 @@ function renderWaveSVG(ph, uid){
       let px1=(pmsStart-1)*dayW;
       let px2=(pmsEnd-1)*dayW;
       svg+=`<rect x="${px1}" y="30" width="${px2-px1}" height="12" fill="var(--roseD)" opacity=".12" rx="4"/>`;
-      svg+=`<text x="${(px1+px2)/2}" y="48" fill="var(--roseD)" font-size="8" text-anchor="middle" font-weight="600" opacity=".65">🔴 Повыш. эмоцион.</text>`;
+      svg+=`<text x="${(px1+px2)/2}" y="48" fill="var(--roseD)" font-size="8" text-anchor="middle" font-weight="600" opacity=".65">${_('high_emo')}</text>`;
     }
     let dtOv=new Date(sd);
     dtOv.setDate(dtOv.getDate()+ovDay-1);
     let ovLabel=dtOv.toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
-    svg+=`<text x="${ovx}" y="85" fill="var(--gold)" font-size="7" text-anchor="middle" font-weight="600" opacity=".7">Овуляция</text>`;
+    svg+=`<text x="${ovx}" y="85" fill="var(--gold)" font-size="7" text-anchor="middle" font-weight="600" opacity=".7">${_('ovulation')}</text>`;
     svg+=`<text x="${ovx}" y="95" fill="var(--gold)" font-size="6" text-anchor="middle" opacity=".5">${ovLabel}</text>`;
   }
   for(let i=0;i<4;i++){
@@ -1257,7 +1257,7 @@ function renderWaveSVG(ph, uid){
   let cx=(ph.day/ph.cl)*W,cy=waveY(cx,W);
   svg+=`<circle class="wave-ring" cx="${cx}" cy="${cy}" r="16" fill="none" stroke="${cols[ph.phaseId]}" stroke-width="2.5"/>`;
   svg+=`<circle class="wave-dot" cx="${cx}" cy="${cy}" r="8" fill="${cols[ph.phaseId]}" stroke="#fff" stroke-width="3"/>`;
-  let phaseLabels=['Покой','Рост','Расцвет','Увяд.'];
+  let phaseLabels=[_('wave_rest'),_('wave_grow'),_('wave_bloom'),_('wave_fade')];
   for(let i=0;i<4;i++){
     let lx=(bn[i]+bn[i+1])/2*W;
     svg+=`<text x="${lx}" y="132" class="wave-icon">${icons[i]}</text>`;
@@ -1285,41 +1285,41 @@ function renderPhaseGarden(ph, uid){
 
 function fWave(){
   let ph=getPhase(S.curUser);
-  if(!ph) return `<div class="emp"><div class="emp-ic">📊</div><h3>Настройте свой цикл</h3><p>Для отображения фаз укажите параметры цикла.</p></div>`;
+  if(!ph) return `<div class="emp"><div class="emp-ic">📊</div><h3>${_('wave_setup')}</h3><p>${_('wave_setup_desc')}</p></div>`;
   let fs=getUserFlowerSet(S.curUser);
   let lastMood=(S.logs[S.curUser]||[]).length?S.logs[S.curUser][S.logs[S.curUser].length-1]:null;
   let moodEm=lastMood?((MOODS.find(m=>m.l===lastMood.mood)||{}).e||'😐'):'—';
   let today=`<div style="background:linear-gradient(135deg,rgba(224,168,168,.08),rgba(143,191,168,.06));border-radius:20px;padding:18px 20px;margin-bottom:20px;border:1px solid rgba(224,168,168,.15)">
-    <div style="font-size:.85rem;font-weight:700;color:var(--roseD);margin-bottom:10px;letter-spacing:.03em;text-transform:uppercase">⭐ Главное на сегодня</div>
+    <div style="font-size:.85rem;font-weight:700;color:var(--roseD);margin-bottom:10px;letter-spacing:.03em;text-transform:uppercase">${_('wave_today')}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div style="background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center">
         <div style="font-size:2rem">${ph?PHASES[ph.phaseId].sym:'🌊'}</div>
-        <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${ph?WAVE_NAMES[ph.phaseId]:'—'} фаза</div>
+        <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${ph?_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId]):'—'} ${_('phase_word')}</div>
       </div>
       <div style="background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center">
         <div style="font-size:2rem">${moodEm}</div>
-        <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${lastMood?lastMood.mood:'Нет записи'}</div>
+        <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${lastMood?_mk(lastMood.mood):_('wave_no_entry')}</div>
       </div>
     </div>
     <div style="margin-top:10px;font-size:.85rem;color:var(--text2);line-height:1.5;padding:10px 14px;background:rgba(255,255,255,.5);border-radius:12px;border:1px solid var(--border)">
-      ${ph?`🌊 День ${ph.day} из ${ph.cl} · ${WAVE_DESC[ph.phaseId]}`:'📊 Настройте цикл'}
+      ${ph?_('wave_day',ph.day,ph.cl,_(['wave_seed','wave_sprout','wave_flower','wave_fall'][ph.phaseId])):_('wave_setup_chart')}
     </div>
   </div>`;
   let html=today+`<div class="pw">
     <div class="ph"><div class="ph-sym">${PHASES[ph.phaseId].sym}</div>
-      <div class="ph-i"><h3>${tooltip(PHASES[ph.phaseId].name,PHASES[ph.phaseId].name,'Текущая фаза вашего менструального цикла. Каждая фаза имеет свои особенности самочувствия и энергии.')}</h3><p>${PHASES[ph.phaseId].desc}</p></div></div>
+      <div class="ph-i"><h3>${tooltip(_pn(ph.phaseId),_pn(ph.phaseId),_('wave_tooltip'))}</h3><p>${_pd(ph.phaseId)}</p></div></div>
     ${renderWaveSVG(ph, S.curUser)}
-    <div class="pd"><span>🌊 День ${ph.day} из ${ph.cl}</span><span>📍 ${WAVE_NAMES[ph.phaseId]} — ${WAVE_DESC[ph.phaseId]}</span></div>
+    <div class="pd"><span>${_('wave_day_short',ph.day,ph.cl)}</span><span>📍 ${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])} — ${_(['wave_seed','wave_sprout','wave_flower','wave_fall'][ph.phaseId])}</span></div>
     ${renderPhaseGarden(ph, S.curUser)}
   </div>`;
   // Prediction
-  html+=`<div class="pw" style="padding:14px"><h3 style="font-size:.95rem;margin-bottom:8px;color:var(--text2)">📅 Прогноз фаз на цикл</h3>`;
+  html+=`<div class="pw" style="padding:14px"><h3 style="font-size:.95rem;margin-bottom:8px;color:var(--text2)">${_('wave_forecast')}</h3>`;
   PHASES.forEach((p,i)=>{
     let sd=i===0?1:[6,14,17][i-1],ed=[5,13,16,ph.cl][i];
     let act=i===ph.phaseId?'font-weight:700;color:var(--text)':'';
     html+=`<div class="pl-item" style="${act}"><span class="sym">${fs.icons[i]}</span>
-      <div class="info"><div class="name">${p.name} <span style="font-weight:400;color:var(--text3);font-size:.8rem">«${WAVE_NAMES[i]}»</span></div>
-      <div class="days">Дни ${sd}–${ed} · ${WAVE_DESC[i]}</div></div></div>`;
+      <div class="info"><div class="name">${_pn(i)} <span style="font-weight:400;color:var(--text3);font-size:.8rem">«${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][i])}»</span></div>
+      <div class="days">Дни ${sd}–${ed} · ${_(['wave_seed','wave_sprout','wave_flower','wave_fall'][i])}</div></div></div>`;
   });
   html+=`</div>`;
   return html;
@@ -1327,9 +1327,9 @@ function fWave(){
 
 function fSelfCare(){
   let ph=getPhase(S.curUser);
-  if(!ph)return `<div class="emp"><div class="emp-ic">🧘</div><h3>Настройте цикл</h3><p>Чтобы получать практики, укажите данные цикла.</p></div>`;
+  if(!ph)return `<div class="emp"><div class="emp-ic">🧘</div><h3>${_('self_setup')}</h3><p>${_('self_setup_desc')}</p></div>`;
   let tips=F_TIPS[ph.phaseId]||[];
-  let html=`<div class="ts"><h3>${tooltip('🧘 Практики для '+ph.name,'Практики саморегуляции','Техники заботы о себе, подобранные под вашу текущую фазу цикла. Помогают снизить стресс и улучшить самочувствие.')}</h3>`;
+  let html=`<div class="ts"><h3>${tooltip('🧘 '+_('self_title'),_('self_title'),_('self_tooltip'))}</h3>`;
   tips.forEach(t=>{
     let cls='tc'+(t.c?' '+t.c:'');
     html+=`<div class="${cls}"><h4>${t.t}</h4><p>${t.b}</p></div>`;
@@ -1451,8 +1451,8 @@ function fNotifs(g){
 function handleConnectFromInvite(){
   if(!S._pendingConnect)return;
   let cp=S.couples.find(x=>x.code===S._pendingConnect&&x.status==='pending');
-  if(!cp){alert('Код не найден или уже использован');delete S._pendingConnect;renderMaleDash();return}
-  if(S.couples.find(x=>x.mId===S.curUser)){alert('Вы уже в другой паре');return}
+  if(!cp){alert(_('code_not_found'));delete S._pendingConnect;renderMaleDash();return}
+  if(S.couples.find(x=>x.mId===S.curUser)){alert(_('already_paired'));return}
   cp.mId=S.curUser;
   cp.status='pending';
   delete S._pendingConnect;
@@ -1498,7 +1498,7 @@ function renderMaleDash(){
   document.getElementById('dm-user').textContent=u?u.name:'';
   let tabs=['compass','strategy','sonya','history','notif','tariffs','settings'];
   let tabIcons=['compass','clipboard-list','message-circle','bar-chart-3','bell','sparkles','settings'];
-  let tabNames=['Компас партнёра','Стратегия дня','Соня','История цикла','Подсказки','Тарифы','Настройки'];
+  let tabNames=[_('mtab_compass'),_('mtab_strategy'),_('mtab_sonya'),_('mtab_history'),_('mtab_tips'),_('mtab_plans'),_('mtab_settings')];
   let activeTab=S._mTab||'compass';
   let th=document.getElementById('dm-tabs');
   th.innerHTML=tabs.map((t,i)=>`<button class="tab-btn ${t===activeTab?'act':''}" onclick="S._mTab='${t}';renderMaleDash()" title="${tabNames[i]}"><span class="tab-icon">${ic(tabIcons[i],'lx-lg')}</span><span class="tab-label">${tabNames[i]}</span></button>`).join('');
@@ -1545,7 +1545,7 @@ function mCompass(){
   if(lastLog&&priv.showMood){
     let mo=MOODS.find(m=>m.l===lastLog.mood);
     moodHtml=`<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-      <div class="mi"><span>${mo?mo.e:'😐'}</span><span>Настроение: ${lastLog.mood||'—'}</span></div>
+      <div class="mi"><span>${mo?mo.e:'😐'}</span><span>Настроение: ${lastLog?_mk(lastLog.mood):'—'}</span></div>
       ${lastLog.energy?`<div class="mi"><span>🔋</span><span>Энергия: ${lastLog.energy}/10</span></div>`:''}
     </div>`;
   }
@@ -1553,15 +1553,15 @@ function mCompass(){
     let tips=(M_TIPS[ph.phaseId]||[]).filter(t=>t.c==='');
     let mainTip=tips.length?tips[0].b:'Будь рядом — это лучшее, что ты можешь сделать сегодня.';
     let today=`<div style="background:linear-gradient(135deg,rgba(143,191,168,.08),rgba(224,168,168,.06));border-radius:20px;padding:18px 20px;margin-bottom:20px;border:1px solid rgba(143,191,168,.15)">
-      <div style="font-size:.85rem;font-weight:700;color:var(--green);margin-bottom:10px;letter-spacing:.03em;text-transform:uppercase">⭐ Главное на сегодня</div>
+      <div style="font-size:.85rem;font-weight:700;color:var(--green);margin-bottom:10px;letter-spacing:.03em;text-transform:uppercase">${_('wave_today')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div style="background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center">
           <div style="font-size:2rem">${WAVE_ICONS[ph.phaseId]}</div>
-          <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${WAVE_NAMES[ph.phaseId]} · ${ph.cn}</div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])} · ${_(_PKN.cn[ph.phaseId])}</div>
         </div>
         <div style="background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center">
           <div style="font-size:2rem">💡</div>
-          <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">Совет дня</div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${_('m_sonya_tip')}</div>
         </div>
       </div>
       <div style="margin-top:10px;font-size:.85rem;color:var(--text2);line-height:1.5;padding:10px 14px;background:rgba(255,255,255,.5);border-radius:12px;border:1px solid var(--border)">
@@ -1571,10 +1571,10 @@ function mCompass(){
     let html=today+`<div class="ps-bar conn"><span>💞</span><span>Подключен к ${fu?fu.name:'партнерше'}</span></div>
     <div class="pw">
     <div class="ph"><div class="ph-sym" style="font-size:2rem">${fs.icons[ph.phaseId]}</div>
-      <div class="ph-i"><h3>${ph.cn}</h3><p>${ph.desc}${priv.showDay?' · День '+ph.day:''}</p></div></div>
+      <div class="ph-i"><h3>${_(_PKN.cn[ph.phaseId])}</h3><p>${_pd(ph.phaseId)}${priv.showDay?' · День '+ph.day:''}</p></div></div>
     ${moodHtml}
     ${renderWaveSVG(ph, cp.fId)}
-    <div class="pd"><span>🌊 ${priv.showDay?'День '+ph.day+' из '+ph.cl:'Фаза '+WAVE_NAMES[ph.phaseId]}</span><span>📍 ${WAVE_NAMES[ph.phaseId]} — ${WAVE_DESC[ph.phaseId]}</span></div>
+    <div class="pd"><span>🌊 ${priv.showDay?_('wave_day_short',ph.day,ph.cl):_('phase_word')+': '+_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])}</span><span>📍 ${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])} — ${_(['wave_seed','wave_sprout','wave_flower','wave_fall'][ph.phaseId])}</span></div>
     ${renderPhaseGarden(ph, cp.fId)}
     </div>
     <div class="text-center mb-2"><button class="btn btn-g btn-sm" onclick="genNotifs()">🔄 Сгенерировать подсказки</button></div>`;
@@ -1595,7 +1595,7 @@ function mStrategy(){
   if(priv.showPhase){
     html+=`<div class="pw" style="padding:18px;background:linear-gradient(135deg,${ph.color}18,transparent);border-left:4px solid ${ph.color};margin-bottom:18px">
       <div class="ph" style="margin-bottom:0"><div class="ph-sym" style="font-size:2rem">${WAVE_ICONS[ph.phaseId]}</div>
-      <div class="ph-i"><h3 style="font-size:1.05rem">${ph.cn}</h3><p style="font-size:.85rem">${ph.desc}${priv.showDay?' · День '+ph.day:''}</p></div></div>
+      <div class="ph-i"><h3 style="font-size:1.05rem">${_(_PKN.cn[ph.phaseId])}</h3><p style="font-size:.85rem">${_pd(ph.phaseId)}${priv.showDay?' · День '+ph.day:''}</p></div></div>
     </div>`;
   } else {
     html+=`<div class="pw" style="padding:18px;background:var(--border);border-left:4px solid var(--text3);margin-bottom:18px;opacity:.7">
@@ -1609,7 +1609,7 @@ function mStrategy(){
       <div class="strat-grid">`;
     let icons={'':'✅','av':'🚫','ps':'🧠'};
     let classes={'':'do','av':'avoid','ps':'psych'};
-    let labels={'':'Сделать','av':'Избегать','ps':'Совет психолога'};
+    let labels={'':_('m_todo_do'),'av':_('m_todo_avoid'),'ps':'Совет психолога'};
     tips.forEach(t=>{
       let c=classes[t.c]||'do';
       html+=`<div class="strat-card ${c}"><div class="s-icon">${icons[t.c]||'✅'}</div>
@@ -1646,10 +1646,10 @@ function mHistory(){
   return `<div class="pw"><h3 class="mb-2">📊 Как прошел цикл</h3>
     <p style="color:var(--text2);font-size:.9rem">Обобщенная информация о циклах, которой партнерша решила поделиться.</p>
     <div class="flex gap-1 mt-2" style="flex-wrap:wrap">
-      <span class="mi">🌰 Этап восстановления</span>
-      <span class="mi">🌱 Период энергии</span>
-      <span class="mi">🌸 Период близости</span>
-      <span class="mi">🍂 Период чуткости</span>
+      <span class="mi">🌰 ${_('phase_mens_cn')}</span>
+      <span class="mi">🌱 ${_('phase_foll_cn')}</span>
+      <span class="mi">🌸 ${_('phase_ovul_cn')}</span>
+      <span class="mi">🍂 ${_('phase_lut_cn')}</span>
     </div>
     <p class="mt-2" style="color:var(--text3);font-size:.85rem">Статистика будет доступна после завершения первого полного цикла.</p>
   </div>`;
@@ -1678,9 +1678,9 @@ function mNotifs(){
       let tips=M_TIPS[ph.phaseId]||[];
       html+=`<div class="pw mt-2" style="padding:14px;background:linear-gradient(135deg,${WAVE_COLORS[ph.phaseId]}15,transparent)"><h4 class="mb-1">📌 Текущие рекомендации</h4>
         <ul style="font-size:.85rem;color:var(--text2);padding-left:1.2rem;line-height:1.8">
-        <li><strong>${WAVE_ICONS[ph.phaseId]} Фаза:</strong> ${ph.cn} (${WAVE_NAMES[ph.phaseId]})</li>
+        <li><strong>${WAVE_ICONS[ph.phaseId]} ${_('phase_word')}:</strong> ${_(_PKN.cn[ph.phaseId])} (${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])})</li>
         <li><strong>📅 День:</strong> ${ph.day} из ${ph.cl}</li>
-        <li><strong>💡 Совет дня:</strong> ${tips.length?tips[0].b:'Будьте внимательны и заботливы'}</li></ul></div>`;
+        <li><strong>💡 ${_('m_sonya_tip')}:</strong> ${tips.length?tips[0].b:'Будьте внимательны и заботливы'}</li></ul></div>`;
     }
   }
   return html;
@@ -1816,6 +1816,7 @@ const _T={
 'wave_flower':{ru:'Прекрасный цветок',en:'Beautiful flower'},
 'wave_fall':{ru:'Листопады',en:'Falling leaves'},
 'wave_day':{ru:'🌊 День {0} из {1} · {2}',en:'🌊 Day {0} of {1} · {2}'},
+'wave_day_short':{ru:'🌊 День {0} из {1}',en:'🌊 Day {0} of {1}'},
 'mood_great':{ru:'Отлично',en:'Great'},
 'mood_good':{ru:'Хорошо',en:'Good'},
 'mood_neutral':{ru:'Нейтрально',en:'Neutral'},
@@ -2059,8 +2060,8 @@ function fSettings(g){
   }
 
   return `<div style="max-width:600px;margin:0 auto;padding:0 4px">
-    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:6px">⚙️ Настройки</h2>
-    <p style="color:var(--text2);font-size:.9rem;margin-bottom:24px">Профиль, тема оформления и управление</p>
+    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:6px">${_('settings_title')}</h2>
+    <p style="color:var(--text2);font-size:.9rem;margin-bottom:24px">${_('settings_sub')}</p>
 
     <!-- Profile card -->
     <div class="rc" style="margin-bottom:16px">
@@ -2090,8 +2091,8 @@ function fSettings(g){
     <!-- Theme -->
     <div class="rc" style="margin-bottom:16px;text-align:left">
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <div><div style="font-weight:600;font-size:.95rem">🌓 Тема оформления</div>
-        <div style="color:var(--text2);font-size:.8rem;margin-top:2px">Светлая / Тёмная</div></div>
+        <div><div style="font-weight:600;font-size:.95rem">${_('settings_theme')}</div>
+        <div style="color:var(--text2);font-size:.8rem;margin-top:2px">${_('settings_theme_val')}</div></div>
         <label style="position:relative;display:inline-block;width:52px;height:28px;cursor:pointer">
           <input type="checkbox" ${theme==='dark'?'checked':''} onchange="setTheme(this.checked?'dark':'light');renderFemaleDash();renderMaleDash();"
             style="opacity:0;width:0;height:0;position:absolute">
@@ -2107,7 +2108,7 @@ function fSettings(g){
     <!-- Language -->
     <div class="rc" style="margin-bottom:16px;text-align:left">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div><div style="font-weight:600;font-size:.95rem">🌐 Язык интерфейса</div>
+        <div><div style="font-weight:600;font-size:.95rem">${_('settings_lang')}</div>
         <div style="color:var(--text2);font-size:.8rem;margin-top:2px">${LANG_FLAGS[_lang]} ${LANG_NAMES[_lang]}</div></div>
         <select onchange="setLang(this.value);renderFemaleDash();renderMaleDash()" style="padding:6px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--input);color:var(--text);font-size:.85rem;cursor:pointer">
           ${Object.keys(LANG_NAMES).map(k=>`<option value="${k}" ${k===_lang?'selected':''}>${LANG_FLAGS[k]} ${LANG_NAMES[k]}</option>`).join('')}
@@ -2118,14 +2119,14 @@ function fSettings(g){
     ${isF?`
     <!-- Female: cycle data -->
     <div class="rc" style="margin-bottom:16px;text-align:left">
-      <div style="font-weight:600;font-size:.95rem;margin-bottom:4px">📊 Данные цикла</div>
+      <div style="font-weight:600;font-size:.95rem;margin-bottom:4px">${_('settings_cycle')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
         <div style="background:var(--bg);border-radius:12px;padding:12px;text-align:center">
           <div style="color:var(--text2);font-size:.75rem">Длина цикла</div>
           <div style="font-size:1.2rem;font-weight:800;color:var(--roseD)">${c.cl||28} дн</div>
         </div>
         <div style="background:var(--bg);border-radius:12px;padding:12px;text-align:center">
-          <div style="color:var(--text2);font-size:.75rem">День цикла</div>
+          <div style="color:var(--text2);font-size:.75rem">${_('settings_day')}</div>
           <div style="font-size:1.2rem;font-weight:800;color:var(--roseD)">${getPhase(S.curUser)?getPhase(S.curUser).day:'—'}</div>
         </div>
       </div>
@@ -2152,14 +2153,14 @@ function fSettings(g){
         <div id="settings-couple-code" style="font-family:monospace;font-size:1.1rem;font-weight:800;
           letter-spacing:4px;background:var(--bg);padding:10px 16px;border-radius:12px;border:1.5px dashed var(--border2);
           flex:1;text-align:center;color:var(--roseD)">${cpF?cpF.code:'------'}</div>
-        <button class="btn btn-s btn-sm" onclick="genCoupleCode()" style="flex-shrink:0">${cpF?'🔄 Новый':'🔑 Создать'}</button>
+        <button class="btn btn-s btn-sm" onclick="genCoupleCode()" style="flex-shrink:0">${cpF?_('settings_code_new'):_('settings_code_create')}</button>
       </div>
       ${cpF?`
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-s btn-sm" onclick="let e=document.getElementById('settings-couple-code');if(e)navigator.clipboard.writeText(e.textContent);this.textContent='✅ Скопировано'" style="flex:1" title="Копировать код">📋 Копировать код</button>
-        <button class="btn btn-p btn-sm" onclick="navigator.clipboard.writeText(buildConnectLink());alert('Ссылка скопирована! Отправьте её партнеру.')" style="flex:2">🔗 Отправить ссылку</button>
+        <button class="btn btn-s btn-sm" onclick="let e=document.getElementById('settings-couple-code');if(e)navigator.clipboard.writeText(e.textContent);this.textContent='✅ Скопировано'" style="flex:1" title="${_('settings_code_copy')}">${_('settings_code_copy')}</button>
+        <button class="btn btn-p btn-sm" onclick="navigator.clipboard.writeText(buildConnectLink());alert('Ссылка скопирована! Отправьте её партнеру.')" style="flex:2">${_('settings_code_link')}</button>
       </div>
-      <p style="color:var(--text3);font-size:.75rem;margin-top:8px">По ссылке партнер автоматически перейдет к подключению</p>`:''}
+      <p style="color:var(--text3);font-size:.75rem;margin-top:8px">${_('settings_code_link_desc')}</p>`:''}
     </div>
 
     <!-- Female: privacy toggles -->
@@ -2184,17 +2185,17 @@ function fSettings(g){
           </div>
           <div style="flex:1"><div style="font-size:.88rem;font-weight:500">${o.l}</div>
           <div style="font-size:.75rem;color:var(--text3)">${o.d}</div></div>
-          <span class="priv-label" style="font-size:.7rem;color:${val?'var(--green)':'var(--text3)'}">${val?'✅ Вкл':'❌ Выкл'}</span>
+          <span class="priv-label" style="font-size:.7rem;color:${val?'var(--green)':'var(--text3)'}">${val?_('settings_on'):_('settings_off')}</span>
         </label>`
       }).join('')}
       <p style="font-size:.75rem;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-        🔒 Медицинские подробности и точный день овуляции всегда скрыты.
+        ${_('settings_med')}
       </p>
     </div>
     `:`
     <!-- Male: couple status + code explanation -->
     <div class="rc" style="margin-bottom:16px;text-align:left">
-      <div style="font-weight:600;font-size:.95rem;margin-bottom:4px">💞 Код пары</div>
+      <div style="font-weight:600;font-size:.95rem;margin-bottom:4px">${_('settings_couple_code')}</div>
       ${cpM?`
         <p style="color:var(--green);font-size:.85rem">✅ Вы подключены к ${partnerName?'<strong>'+partnerName+'</strong>':'партнерше'}.</p>
         <p style="color:var(--text2);font-size:.78rem;margin-top:6px;line-height:1.6">Код пары — это ваш персональный ключ синхронизации. Через него Соня получает данные о фазах цикла партнёрши и настраивает стратегии заботы специально под вас.</p>
@@ -2220,13 +2221,13 @@ function fSettings(g){
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <div><div style="font-weight:600;font-size:.95rem">⭐ Тариф</div>
         <div style="color:var(--text2);font-size:.8rem;margin-top:2px">${s.trial?'Пробный Premium':s.plan==='premium'?'Premium':s.plan==='unlimited'?'IAP Безлимит':'Бесплатный'}</div></div>
-        ${s.plan==='premium'||s.plan==='unlimited'?`<span style="background:linear-gradient(135deg,var(--gold),#D4A040);color:#fff;padding:4px 14px;border-radius:50px;font-size:.75rem;font-weight:700">${s.plan==='unlimited'?'⚡':'✨'} Активен</span>`:s.trial?`<span style="background:rgba(232,208,140,.2);color:var(--gold);padding:4px 14px;border-radius:50px;font-size:.75rem;font-weight:600">🔥 ${trialDays} дн.</span>`:`<span style="background:var(--border2);color:var(--text2);padding:4px 14px;border-radius:50px;font-size:.75rem">Бесплатный</span>`}
+        ${s.plan==='premium'||s.plan==='unlimited'?`<span style="background:linear-gradient(135deg,var(--gold),#D4A040);color:#fff;padding:4px 14px;border-radius:50px;font-size:.75rem;font-weight:700">${s.plan==='unlimited'?'⚡':'✨'} ${_('settings_active')}</span>`:s.trial?`<span style="background:rgba(232,208,140,.2);color:var(--gold);padding:4px 14px;border-radius:50px;font-size:.75rem;font-weight:600">🔥 ${trialDays} дн.</span>`:`<span style="background:var(--border2);color:var(--text2);padding:4px 14px;border-radius:50px;font-size:.75rem">Бесплатный</span>`}
       </div>
-      <button class="btn btn-s btn-sm btn-block mt-2" onclick="var g=document.querySelector('#p-dash-female.active')?'f':'m';if(g==='f'){S._fTab='tariffs';renderFemaleDash()}else{S._mTab='tariffs';renderMaleDash()}" style="font-size:.82rem">📋 Сравнить тарифы и подписки</button>
+      <button class="btn btn-s btn-sm btn-block mt-2" onclick="var g=document.querySelector('#p-dash-female.active')?'f':'m';if(g==='f'){S._fTab='tariffs';renderFemaleDash()}else{S._mTab='tariffs';renderMaleDash()}" style="font-size:.82rem">${_('settings_compare')}</button>
       ${(s.plan==='premium'||s.plan==='unlimited'||s.trial)?`
       <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-        <div style="font-weight:600;font-size:.85rem;margin-bottom:8px">🌸 Иконки волны</div>
-        <p style="font-size:.75rem;color:var(--text2);margin-bottom:10px">Выберите набор иконок для отображения фаз цикла.</p>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:8px">${_('settings_icons')}</div>
+        <p style="font-size:.75rem;color:var(--text2);margin-bottom:10px">${_('settings_icons_desc')}</p>
         <div class="flower-grid">
           ${WAVE_FLOWER_SETS.map(f=>`
             <div class="flower-opt ${f.id===s.flowerSet?'sel':''}" onclick="setFlowerSet(S.curUser,${f.id});renderFemaleDash();renderMaleDash()">
@@ -2240,27 +2241,27 @@ function fSettings(g){
 
     <!-- Sync -->
     <div class="rc" style="margin-bottom:16px;text-align:left">
-      <div style="font-weight:600;font-size:.95rem;margin-bottom:6px">☁️ Синхронизация</div>
+      <div style="font-weight:600;font-size:.95rem;margin-bottom:6px">${_('settings_sync')}</div>
       <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--text2)">
         <span style="width:8px;height:8px;border-radius:50%;background:${_ghToken?'var(--green)':'#888'}"></span>
-        <span>GitHub: ${_ghToken?'подключено ('+_ghRepo+')':'не настроено'}</span>
+        <span>GitHub: ${_ghToken?_('settings_sync_connected')+' ('+_ghRepo+')':_('settings_sync_not')}</span>
       </div>
-      <div style="font-size:.75rem;color:var(--text3);margin-top:8px">Данные сохраняются автоматически каждые 60 секунд.</div>
-      <button class="btn btn-s btn-sm btn-block mt-2" onclick="setupSync()" style="font-size:.82rem">⚙️ Настроить синхронизацию</button>
+      <div style="font-size:.75rem;color:var(--text3);margin-top:8px">${_('settings_sync_auto')}</div>
+      <button class="btn btn-s btn-sm btn-block mt-2" onclick="setupSync()" style="font-size:.82rem">${_('settings_sync_btn')}</button>
     </div>
 
     <!-- Danger zone -->
     <div class="rc" style="margin-bottom:16px;text-align:left;border:1px solid rgba(212,96,96,.2)">
-      <div style="font-weight:600;font-size:.95rem;margin-bottom:4px;color:#D46060">⚠️ Опасная зона</div>
-      <p style="color:var(--text2);font-size:.8rem;margin-bottom:12px">Все данные будут удалены без возможности восстановления.</p>
-      <button class="btn btn-o btn-sm" onclick="if(confirm('Вы уверены? Все данные будут удалены.')){localStorage.removeItem('biosync_data');localStorage.removeItem('biosync_remember');localStorage.removeItem('biosync_theme');location.reload()}">
-        🗑️ Сбросить все данные
+      <div style="font-weight:600;font-size:.95rem;margin-bottom:4px;color:#D46060">${_('settings_danger')}</div>
+      <p style="color:var(--text2);font-size:.8rem;margin-bottom:12px">${_('settings_danger_desc')}</p>
+      <button class="btn btn-o btn-sm" onclick="if(confirm(_('settings_reset_confirm'))){localStorage.removeItem('biosync_data');localStorage.removeItem('biosync_remember');localStorage.removeItem('biosync_theme');location.reload()}">
+        ${_('settings_reset_btn')}
       </button>
     </div>
 
     <!-- Logout -->
     <button class="btn btn-g btn-block" onclick="logout()" style="margin-top:4px;padding:14px;justify-content:center">
-      🚪 Выйти из аккаунта
+      ${_('settings_logout')}
     </button>
   </div>`;
 }
@@ -2272,14 +2273,14 @@ function sonyaIntro(){
   let moodDays=(S.logs[S.curUser]||[]).length;
   let ritCount=Math.min(12,Math.floor(Math.random()*6)+3);
   return {
-    greet:`Привет, ${u?u.name:'друг'}! Я Соня — твой ИИ-медиатор пары.`,
-    stats:`Я уже заметила: ${moodDays} дневниковых записей, ${sessions} сессий «Выговориться», ${ritCount} ритуалов на сближение за это время.`,
-    ctx:moodDays>5?'Хорошая привычка вести дневник — это помогает мне точнее подбирать практики.':sessions>2?'Ты пользуешься «Выговориться» — это отличный способ снять напряжение.':'Я здесь, чтобы помочь вам слышать друг друга.'
+    greet:_('sonya_intro',u?u.name:'друг'),
+    stats:_('sonya_stats',moodDays,sessions,ritCount),
+    ctx:moodDays>5?_('sonya_habit_diary'):sessions>2?_('sonya_habit_voice'):_('sonya_close')
   };
 }
 function sonyaPredict(){
   let ph=getPhase(S.curUser);
-  if(!ph)return {alert:null,advice:'Настройте цикл, и я смогу давать прогнозы.'};
+  if(!ph)return {alert:null,advice:_('sonya_setup')};
   let phaseAlerts=[
     {alert:'🌙 Покой',advice:'В ближайшие дни — энергия на спаде. Отличное время для тихих вечеров и заботы о себе.'},
     {alert:'🌱 Рост',advice:'Энергия растёт! Лучшее время для свиданий, новых идей и активного отдыха вдвоём.'},
@@ -2342,13 +2343,13 @@ function fSonya(){
   return `<div style="max-width:600px;margin:0 auto">
     <div style="text-align:center;margin-bottom:20px">
       <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--lav),#A890B8);display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 12px;box-shadow:0 6px 24px rgba(192,176,208,.35);border:3px solid rgba(255,255,255,.3)">🤍</div>
-      <div style="font-size:1.3rem;font-weight:800;letter-spacing:-.02em">Соня — ваш семейный ИИ-психолог</div>
-      <div style="font-size:.82rem;color:var(--text3);margin-top:4px;font-weight:500">24/7 от BioSync</div>
+      <div style="font-size:1.3rem;font-weight:800;letter-spacing:-.02em">${_('sonya_title')}</div>
+      <div style="font-size:.82rem;color:var(--text3);margin-top:4px;font-weight:500">${_('sonya_24')}</div>
     </div>
     <div style="background:linear-gradient(135deg,rgba(192,176,208,.12),transparent);border-radius:24px;padding:20px;margin-bottom:16px;border:1px solid rgba(192,176,208,.15)">
       <div style="display:flex;align-items:flex-start;gap:14px">
         <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--lav),#A890B8);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;box-shadow:0 4px 12px rgba(192,176,208,.3)">🤍</div>
-        <div style="flex:1"><div style="font-weight:700;font-size:1rem">${tooltip(intro.greet,'ИИ-медиатор Соня','Соня помогает вам слышать друг друга: даёт прогнозы фаз, медиации для сложных разговоров, отчёты и SOS-успокоение. Всё конфиденциально.')}</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:1rem">${tooltip(intro.greet,_('sonya_tooltip'),_('sonya_try_desc'))}</div>
         <p style="font-size:.82rem;color:var(--text2);margin-top:4px;line-height:1.6">${intro.stats}<br>${intro.ctx}</p></div>
       </div>
     </div>
@@ -2356,7 +2357,7 @@ function fSonya(){
     ${pred.alert?`
     <div style="background:linear-gradient(135deg,rgba(224,168,168,.1),transparent);border-radius:18px;padding:16px;margin-bottom:16px;border-left:4px solid var(--rose)">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <span style="font-size:1.2rem">🔮</span><span style="font-weight:600;font-size:.9rem">Предиктор Сони</span>
+        <span style="font-size:1.2rem">🔮</span><span style="font-weight:600;font-size:.9rem">${_('sonya_predictor')}</span>
       </div>
       <p style="font-size:.85rem;color:var(--text2);line-height:1.6">${pred.alert} · ${pred.moodAdvice}</p>
     </div>`:''}
@@ -2365,33 +2366,33 @@ function fSonya(){
     <div class="rc" style="margin-bottom:16px;padding:14px 16px;text-align:left;border:1px solid rgba(192,176,208,.2);background:linear-gradient(135deg,rgba(192,176,208,.06),transparent)">
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:1.5rem">🤍</span>
-        <div style="flex:1"><div style="font-weight:600;font-size:.85rem">Попробуй Соню в деле</div>
-        <p style="font-size:.78rem;color:var(--text2)">Медиатор, предиктор, тренер — полный доступ в Premium. Уже ${s.trial?'пробный период активен':'есть бесплатный пробный на 7 дней'}.</p></div>
-        <button class="btn btn-p btn-sm" onclick="showTariffs()">⭐ ${s.trial?'Оформить':'Попробовать'}</button>
+        <div style="flex:1"><div style="font-weight:600;font-size:.85rem">${_('sonya_try')}</div>
+        <p style="font-size:.78rem;color:var(--text2)">${_('sonya_try_desc')} ${s.trial?'пробный период активен':'есть бесплатный пробный на 7 дней'}.</p></div>
+        <button class="btn btn-p btn-sm" onclick="showTariffs()">⭐ ${s.trial?_('sonya_get'):_('sonya_try_btn')}</button>
       </div>
     </div>`:''}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
       <div class="rc" style="padding:16px;text-align:center;cursor:pointer" onclick="S._sonyaMode='mediate';renderFemaleDash()">
         <span style="font-size:1.6rem;display:block;margin-bottom:4px">💬</span>
-        <div style="font-weight:600;font-size:.82rem">Медиатор</div>
+        <div style="font-weight:600;font-size:.82rem">${_('sonya_mediator')}</div>
         <div style="font-size:.7rem;color:var(--text3)">Помогу поговорить</div>
         ${!isPremium?'<div style="font-size:.6rem;color:var(--roseD);margin-top:2px">Premium</div>':''}
       </div>
       <div class="rc" style="padding:16px;text-align:center;cursor:pointer" onclick="S._sonyaMode='report';renderFemaleDash()">
         <span style="font-size:1.6rem;display:block;margin-bottom:4px">📊</span>
-        <div style="font-weight:600;font-size:.82rem">Отчёт пары</div>
+        <div style="font-weight:600;font-size:.82rem">${_('sonya_report')}</div>
         <div style="font-size:.7rem;color:var(--text3)">Как прошёл месяц</div>
         ${!isPremium?'<div style="font-size:.6rem;color:var(--roseD);margin-top:2px">Premium</div>':''}
       </div>
       <div class="rc" style="padding:16px;text-align:center;cursor:pointer" onclick="S._sonyaMode='soothe';renderFemaleDash()">
         <span style="font-size:1.6rem;display:block;margin-bottom:4px">🆘</span>
-        <div style="font-weight:600;font-size:.82rem">SOS-успокоение</div>
+        <div style="font-weight:600;font-size:.82rem">${_('sonya_sos_mode')}</div>
         <div style="font-size:.7rem;color:var(--text3)">Здесь и сейчас</div>
       </div>
       <div class="rc" style="padding:16px;text-align:center;cursor:pointer" onclick="S._sonyaMode='challenge';renderFemaleDash()">
         <span style="font-size:1.6rem;display:block;margin-bottom:4px">🎯</span>
-        <div style="font-weight:600;font-size:.82rem">Челлендж</div>
+        <div style="font-weight:600;font-size:.82rem">${_('sonya_challenge')}</div>
         <div style="font-size:.7rem;color:var(--text3)">Задание на неделю</div>
         ${!isPremium?'<div style="font-size:.6rem;color:var(--roseD);margin-top:2px">Premium</div>':''}
       </div>
@@ -2532,11 +2533,38 @@ function fSonya(){
 
   if(mode==='challenge'){
     let challenges=[
-      {t:'30 дней спасибо',d:'Каждый день пишите друг другу одну благодарность. Можно в заметках, можно вслух.',e:'🙏'},
-      {t:'Неделя без критики',d:'7 дней — ни одного замечания. Только поддержка и принятие.',e:'🤐'},
-      {t:'5 языков любви',d:'Каждый день — один «язык»: слова, время, подарки, помощь, прикосновения.',e:'💕'},
-      {t:'Вечерние 10 минут',d:'Каждый вечер 10 минут говорить о прошедшем дне. Без телефонов.',e:'🌅'}
+      {t:'30 дней спасибо',d:'Каждый день пишите друг другу одну благодарность. Можно в заметках, можно вслух.',e:'🙏',days:30},
+      {t:'Неделя без критики',d:'7 дней — ни одного замечания. Только поддержка и принятие.',e:'🤐',days:7},
+      {t:'5 языков любви',d:'Каждый день — один «язык»: слова, время, подарки, помощь, прикосновения.',e:'💕',days:7},
+      {t:'Вечерние 10 минут',d:'Каждый вечер 10 минут говорить о прошедшем дне. Без телефонов.',e:'🌅',days:14}
     ];
+    let activeChallenge=S._activeChallenge;
+    if(activeChallenge){
+      let ch=challenges.find(function(x){return x.t===activeChallenge.t});
+      if(ch){
+        let passed=Math.max(1,Math.floor((Date.now()-activeChallenge.start)/86400000)+1);
+        let total=ch.days;
+        let pct=Math.min(100,Math.round(passed/total*100));
+        return `<div style="max-width:600px;margin:0 auto;text-align:left">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <button class="btn btn-g btn-sm" onclick="delete S._sonyaMode;renderFemaleDash()" style="padding:6px 10px">←</button>
+            <span style="font-weight:700;font-size:1rem">🎯 ${ch.t}</span>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(232,208,140,.12),transparent);border-radius:20px;padding:24px;text-align:center;margin-bottom:16px;border:1px solid rgba(232,208,140,.25)">
+            <div style="font-size:3rem;margin-bottom:8px">${ch.e}</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px">
+              <span style="font-size:2.2rem;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums">${String(Math.min(passed,total)).padStart(2,'0')}/${String(total).padStart(2,'0')}</span>
+            </div>
+            <div style="background:var(--border);border-radius:50px;height:8px;overflow:hidden;margin-bottom:12px"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--gold),#D4A040);border-radius:50px;transition:width .5s"></div></div>
+            <p style="font-size:.85rem;color:var(--text2)">${passed>=total?'🎉 Челлендж завершён! Поздравляем! 🎉':'День '+Math.min(passed,total)+' из '+total+'. '+(total-passed)+' '+(total-passed===1?'день остался':'дней осталось')}</p>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
+              ${passed<total?'<button class="btn btn-p btn-sm" onclick="markChallengeDay()">✅ Отметить сегодня</button>':''}
+              <button class="btn btn-g btn-sm" onclick="S._activeChallenge=null;save();S._sonyaMode=\'challenge\';renderFemaleDash()">🔄 Новый челлендж</button>
+            </div>
+          </div>
+        </div>`;
+      }
+    }
     let c=rnd(challenges);
     return `<div style="max-width:600px;margin:0 auto;text-align:left">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
@@ -2547,8 +2575,9 @@ function fSonya(){
         <div style="font-size:3rem;margin-bottom:8px">${c.e}</div>
         <div style="font-weight:700;font-size:1.1rem;margin-bottom:6px">${c.t}</div>
         <p style="font-size:.85rem;color:var(--text2);line-height:1.6">${c.d}</p>
+        <div style="font-size:.75rem;color:var(--text3);margin-top:6px">📅 Период: ${c.days} ${c.days===7?'дней':c.days===14?'дней':'дней'}</div>
         <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
-          <button class="btn btn-p btn-sm" onclick="S._sonyaMode='challenge-active';renderFemaleDash()">✅ Начинаем!</button>
+          <button class="btn btn-p btn-sm" onclick="startChallenge('${c.t}')">✅ Начинаем!</button>
           <button class="btn btn-g btn-sm" onclick="renderFemaleDash()">🔄 Другой</button>
         </div>
       </div>
@@ -2556,20 +2585,40 @@ function fSonya(){
   }
 
   if(mode==='challenge-active'){
-    setTimeout(()=>{delete S._sonyaMode;renderFemaleDash()},3000);
+    setTimeout(function(){delete S._sonyaMode;renderFemaleDash()},3000);
     return `<div style="max-width:600px;margin:0 auto;text-align:center;padding:40px 0">
       <div style="font-size:4rem;margin-bottom:12px">🎉</div>
       <div style="font-weight:700;font-size:1.1rem;margin-bottom:8px">Челлендж запущен!</div>
-      <p style="color:var(--text2);font-size:.9rem">Я буду напоминать каждый вечер.<br>В конце недели подведём итоги.</p>
+      <p style="color:var(--text2);font-size:.9rem">Я буду напоминать каждый вечер.<br>В конце периода подведём итоги.</p>
     </div>`;
   }
   return '';
 }
 
+function startChallenge(title){
+  S._activeChallenge={t:title,start:Date.now(),daysMarked:[]};
+  save();
+  S._sonyaMode='challenge-active';
+  renderFemaleDash();
+}
+function markChallengeDay(){
+  if(!S._activeChallenge)return;
+  let today=new Date().toDateString();
+  if(!S._activeChallenge.daysMarked)S._activeChallenge.daysMarked=[];
+  if(S._activeChallenge.daysMarked.indexOf(today)===-1){
+    S._activeChallenge.daysMarked.push(today);
+    save();
+    showToast('День отмечен! Так держать! 🎯','success');
+  }else{
+    showToast('Сегодня уже отмечено','');
+  }
+  renderFemaleDash();
+}
+
 function mSonya(){
   let cp=S.couples.find(x=>x.mId===S.curUser);
   let u=S.users.find(x=>x.id===S.curUser);
-  if(!cp||cp.status!=='active')return `<div class="emp"><div class="emp-ic">🤍</div><h3>Соня пока не активна</h3><p>Подключитесь к партнерше, чтобы Соня начала помогать.</p></div>`;
+  if(!cp||cp.status!=='active')return `<div class="emp"><div class="emp-ic">🤍</div><h3>${_('m_sonya_inactive')}</h3><p>Подключитесь к партнерше, чтобы Соня начала помогать.</p></div>`;
   let fu=S.users.find(x=>x.id===cp.fId);
   let ph=getPhase(cp.fId);
   let s=getSub(S.curUser);
@@ -2586,7 +2635,7 @@ function mSonya(){
     <div style="background:linear-gradient(135deg,rgba(192,176,208,.08),transparent);border-radius:24px;padding:20px;margin-bottom:16px;border:1px solid rgba(192,176,208,.1)">
       <div style="display:flex;align-items:flex-start;gap:14px">
         <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--lav),#A890B8);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;box-shadow:0 4px 12px rgba(192,176,208,.3)">🤍</div>
-        <div style="flex:1"><div style="font-weight:700;font-size:1rem">${tooltip('Соня · переводчик пары','ИИ-медиатор Соня','Переводит фазы цикла партнерши на язык заботы: подсказывает, какие слова и действия будут наиболее уместны в текущей фазе.')}</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:1rem">${tooltip(_('m_sonya_tooltip'),_('m_sonya_tooltip'),'Переводит фазы цикла партнерши на язык заботы: подсказывает, какие слова и действия будут наиболее уместны в текущей фазе.')}</div>
         <p style="font-size:.82rem;color:var(--text2);margin-top:4px;line-height:1.6">Привет, ${u?u.name:'друг'}! Я помогаю тебе понимать ${fu?fu.name:'партнершу'} через призму её цикла. ${ph?`Сейчас ${WAVE_NAMES[ph.phaseId].toLowerCase()} фаза — ${WAVE_DESC[ph.phaseId]}.`:''}</p></div>
       </div>
     </div>
@@ -2595,7 +2644,7 @@ function mSonya(){
     <div class="rc" style="margin-bottom:16px;padding:14px 16px;text-align:left;border:1px solid rgba(192,176,208,.2)">
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:1.3rem">⭐</span>
-        <div style="flex:1"><div style="font-weight:600;font-size:.85rem">Premium-доступ</div>
+        <div style="flex:1"><div style="font-weight:600;font-size:.85rem">${_('m_sonya_prem')}</div>
         <p style="font-size:.78rem;color:var(--text2)">Соня-переводчик, предиктор и тренер доступны ${s.trial?'в пробном периоде':'с Premium'}</p></div>
         <button class="btn btn-p btn-sm" onclick="showTariffs()">⭐ ${s.trial?'Оформить':'Попробовать'}</button>
       </div>
@@ -2604,13 +2653,13 @@ function mSonya(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
       <div class="rc" style="padding:16px;text-align:center;cursor:pointer" onclick="S._sonyaMode='translate';renderMaleDash()">
         <span style="font-size:1.6rem;display:block;margin-bottom:4px">🌊</span>
-        <div style="font-weight:600;font-size:.82rem">Переводчик фаз</div>
-        <div style="font-size:.7rem;color:var(--text3)">Что стоит за её mood</div>
+        <div style="font-weight:600;font-size:.82rem">${_('m_sonya_translate')}</div>
+        <div style="font-size:.7rem;color:var(--text3)">${_('m_sonya_mood')}</div>
       </div>
       <div class="rc" style="padding:16px;text-align:center;cursor:pointer" onclick="S._sonyaMode='tips';renderMaleDash()">
         <span style="font-size:1.6rem;display:block;margin-bottom:4px">💡</span>
-        <div style="font-weight:600;font-size:.82rem">Совет дня</div>
-        <div style="font-size:.7rem;color:var(--text3)">От Сони лично тебе</div>
+        <div style="font-weight:600;font-size:.82rem">${_('m_sonya_tip')}</div>
+        <div style="font-size:.7rem;color:var(--text3)">${_('m_sonya_personal')}</div>
       </div>
     </div>
 
@@ -2645,14 +2694,14 @@ function mSonya(){
         <p style="font-size:.85rem;color:var(--text2);line-height:1.6">${pm.today}</p>
       </div>
       <div style="background:rgba(143,191,168,.08);border-radius:16px;padding:16px;margin-bottom:12px;border-left:4px solid var(--green)">
-        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">✅ Сделать</div>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">${_('m_todo_do')}</div>
         <p style="font-size:.82rem;color:var(--text2)">${pm.do}</p>
       </div>
       <div style="background:rgba(212,96,96,.08);border-radius:16px;padding:16px;margin-bottom:12px;border-left:4px solid #D46060">
-        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">🚫 Избегать</div>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:4px">${_('m_todo_avoid')}</div>
         <p style="font-size:.82rem;color:var(--text2)">${pm.avoid}</p>
       </div>
-      <button class="btn btn-s btn-block btn-sm" onclick="delete S._sonyaMode;renderMaleDash()">← К Соне</button>
+      <button class="btn btn-s btn-block btn-sm" onclick="delete S._sonyaMode;renderMaleDash()">${_('m_back_sonya')}</button>
     </div>`;
   }
 
@@ -2660,7 +2709,7 @@ function mSonya(){
     return `<div style="max-width:600px;margin:0 auto;text-align:left">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
         <button class="btn btn-g btn-sm" onclick="delete S._sonyaMode;renderMaleDash()" style="padding:6px 10px">←</button>
-        <span style="font-weight:700;font-size:1rem">💡 Совет Сони на сегодня</span>
+        <span style="font-weight:700;font-size:1rem">${_('m_sonya_tip_title')}</span>
       </div>
       <div style="background:var(--bg);border-radius:20px;padding:24px;text-align:center;margin-bottom:12px">
         <div style="font-size:2.5rem;margin-bottom:8px">🤍</div>
@@ -2669,7 +2718,7 @@ function mSonya(){
           🔔 Вечером: спроси «Как прошёл твой день?» и правда выслушай ответ.
         </div>
       </div>
-      <button class="btn btn-s btn-block btn-sm" onclick="delete S._sonyaMode;renderMaleDash()">← К Соне</button>
+      <button class="btn btn-s btn-block btn-sm" onclick="delete S._sonyaMode;renderMaleDash()">${_('m_back_sonya')}</button>
     </div>`;
   }
   return '';
@@ -2702,6 +2751,15 @@ const PREMIUM_TIPS=[
   {emoji:'🌙',text:'Попросите <a href="https://alice.yandex.ru/prompthub/c/family" target="_blank" style="color:var(--roseD);text-decoration:underline">Алису</a> запустить ваш вечерний ритуал расслабления перед сном.'},
   {emoji:'💬',text:'Используйте <a href="https://alice.yandex.ru/prompthub/c/family" target="_blank" style="color:var(--roseD);text-decoration:underline">Алису Семья</a> как семейный органайзер — записывайте идеи ритуалов голосом.'}
 ];
+const PAYMENT_DETAILS={
+  account:'40817810320000814885',
+  bik:'044525677',
+  bank:'АО «Яндекс Банк»',
+  corr:'30101810345250000677',
+  inn:'7750004168',
+  kpp:'770501001',
+  purpose:'Перевод средств НДС не облагается'
+};
 function fTariffs(){
   let s=getSub(S.curUser);
   let isPremium=s.plan==='premium';
@@ -2748,7 +2806,7 @@ function fTariffs(){
         <span style="font-size:1rem;margin-right:4px">${tip.emoji}</span> ${tip.text}
       </div>
       ${isPremium?`<div style="margin-top:8px;font-size:.82rem;color:var(--gold);font-weight:600">⭐ Текущий тариф</div>`:trialActive?`<div style="margin-top:8px;font-size:.82rem;color:var(--gold)">🔥 Пробный период · осталось ${trialDays} дн.</div>
-      <button class="btn btn-p btn-sm btn-block mt-2" onclick="setSub(S.curUser,'premium',12,true);save();renderFemaleDash();renderMaleDash()">📅 Оформить Premium — 3990 ₽/год</button>`:`
+      <button class="btn btn-p btn-sm btn-block mt-2" onclick="showPaymentModal('Premium — год','3990','/год')">📅 Оформить Premium — 3990 ₽/год</button>`:`
       <button class="btn btn-p btn-sm btn-block mt-2" onclick="startTrial(S.curUser);renderFemaleDash();renderMaleDash()">🔥 Попробовать 7 дней бесплатно</button>
       <button class="btn btn-s btn-sm btn-block mt-1" onclick="showTariffs()">📅 Все способы оплаты</button>`}
     </div>
@@ -2765,7 +2823,7 @@ function fTariffs(){
         <li>📈 Сравнительная аналитика по циклам</li>
       </ul>
       ${isUnlimited?`<div style="margin-top:8px;font-size:.82rem;color:var(--roseD);font-weight:600">⚡ Текущий тариф</div>`:isPremium?`
-      <button class="btn btn-p btn-sm btn-block mt-2" onclick="setSub(S.curUser,'unlimited',1,false);save();renderFemaleDash();renderMaleDash()">⚡ Подключить — 199 ₽/мес</button>`:`<p style="font-size:.78rem;color:var(--text3);margin-top:6px">Доступно только с Premium</p>`}
+      <button class="btn btn-p btn-sm btn-block mt-2" onclick="showPaymentModal('IAP Безлимит','199','/мес')">⚡ Подключить — 199 ₽/мес</button>`:`<p style="font-size:.78rem;color:var(--text3);margin-top:6px">Доступно только с Premium</p>`}
     </div>
     <p style="font-size:.7rem;color:var(--text3);text-align:center">Подписка продлевается автоматически. Отменить можно в любой момент.</p>
   </div>`;
@@ -2822,8 +2880,8 @@ function showTariffs(){
           <span style="font-size:1rem;margin-right:4px">${tip.emoji}</span> ${tip.text}
         </div>
         ${isPremium?`<div style="margin-top:10px;font-size:.85rem;color:var(--gold);font-weight:600">⭐ Текущий тариф</div>`:trialDays?`<div style="margin-top:10px;font-size:.8rem;color:var(--gold)">🔥 Пробный период · осталось ${trialDays} дн.</div>`:`
-        <button class="btn btn-p btn-sm btn-block mt-2" onclick="setSub(S.curUser,'premium',1,false);save();showTariffs();renderFemaleDash()">✨ Оформить — 749 ₽/мес</button>
-        <button class="btn btn-s btn-sm btn-block mt-1" onclick="setSub(S.curUser,'premium',12,true);save();showTariffs();renderFemaleDash()">📅 На год — 3990 ₽ <span style="color:var(--green);font-weight:600">(скидка 56%)</span></button>
+        <button class="btn btn-p btn-sm btn-block mt-2" onclick="showPaymentModal('Premium — месяц','749','/мес')">✨ Оформить — 749 ₽/мес</button>
+        <button class="btn btn-s btn-sm btn-block mt-1" onclick="showPaymentModal('Premium — год','3990','/год')">📅 На год — 3990 ₽ <span style="color:var(--green);font-weight:600">(скидка 56%)</span></button>
         `}
       </div>
       <!-- IAP tier -->
@@ -2842,8 +2900,8 @@ function showTariffs(){
           <li>🎯 Персонализированные практики под ваш голос</li>
         </ul>
         ${isUnlimited?`<div style="margin-top:10px;font-size:.8rem;color:var(--roseD);font-weight:600">⚡ Текущий тариф</div>`:isPremium?`
-        <button class="btn btn-p btn-sm btn-block mt-2" onclick="setSub(S.curUser,'unlimited',1,false);save();showTariffs();renderFemaleDash()">⚡ Подключить — 199 ₽/мес</button>
-        <button class="btn btn-s btn-sm btn-block mt-1" onclick="setSub(S.curUser,'unlimited',12,true);save();showTariffs();renderFemaleDash()">📅 На год — 990 ₽</button>
+        <button class="btn btn-p btn-sm btn-block mt-2" onclick="showPaymentModal('IAP Безлимит — месяц','199','/мес')">⚡ Подключить — 199 ₽/мес</button>
+        <button class="btn btn-s btn-sm btn-block mt-1" onclick="showPaymentModal('IAP Безлимит — год','990','/год')">📅 На год — 990 ₽</button>
         `:`<p style="font-size:.78rem;color:var(--text3);margin-top:6px">Доступно только с Premium</p>`}
       </div>
       <p style="font-size:.7rem;color:var(--text3);text-align:center;margin-top:12px">Подписка автоматически продлевается. Отменить можно в любой момент.</p>
@@ -2851,8 +2909,84 @@ function showTariffs(){
     </div>`);
   lucide.createIcons(vm);
 }
-
-// ====== CONNECTION LINK ======
+function showPaymentModal(plan,price,period){
+  document.getElementById('voice-modal').style.display='flex';
+  let vm=document.getElementById('voice-modal-content');
+  let p=PAYMENT_DETAILS;
+  vm.innerHTML=rI(`
+    <div style="text-align:left;max-width:480px;margin:0 auto">
+      <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:4px">${ic('credit-card')} Оплата тарифа</h3>
+      <p style="color:var(--text2);font-size:.85rem;margin-bottom:16px">«${plan}» — ${price} ₽${period}</p>
+      <div style="background:linear-gradient(135deg,rgba(232,208,140,.08),transparent);border-radius:16px;padding:18px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--gold)">🏦 Реквизиты для оплаты (Яндекс Банк)</div>
+        <div style="font-size:.82rem;line-height:2;color:var(--text)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--text2)">Номер счёта:</span><span style="font-family:monospace;font-weight:600">${p.account}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--text2)">БИК:</span><span style="font-family:monospace;font-weight:600">${p.bik}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--text2)">Банк-получатель:</span><span style="font-weight:600">${p.bank}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--text2)">Корр. счёт:</span><span style="font-family:monospace;font-weight:600">${p.corr}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--text2)">ИНН:</span><span style="font-family:monospace;font-weight:600">${p.inn}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="color:var(--text2)">КПП:</span><span style="font-family:monospace;font-weight:600">${p.kpp}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"><span style="color:var(--text2)">Назначение:</span><span style="font-weight:600;text-align:right">${p.purpose}</span></div>
+        </div>
+      </div>
+      <div style="background:var(--roseL);border-radius:14px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(224,168,168,.2);font-size:.82rem;color:var(--text2);line-height:1.6">
+        <strong style="color:var(--roseD)">📋 Как оплатить:</strong><br>
+        1. Откройте приложение вашего банка<br>
+        2. Переведите ${price} ₽ по указанным реквизитам<br>
+        3. Сделайте скриншот чека<br>
+        4. Отправьте чек на <strong>biosync@yandex.ru</strong><br>
+        5. Мы активируем тариф в течение 1 часа
+      </div>
+      <button class="btn btn-p btn-sm btn-block mb-2" onclick="copyPaymentDetails()">📋 Скопировать реквизиты</button>
+      <button class="btn btn-s btn-sm btn-block mb-2" onclick="confirmPayment('${plan}',${price})">✅ Я оплатил — проверить активацию</button>
+      <button class="btn btn-g btn-block" onclick="closeVoiceModal()" style="font-size:.85rem">Закрыть</button>
+    </div>`);
+  lucide.createIcons(vm);
+}
+function copyPaymentDetails(){
+  let p=PAYMENT_DETAILS;
+  let txt='Номер счёта: '+p.account+'\nБИК: '+p.bik+'\nБанк: '+p.bank+'\nКорр. счёт: '+p.corr+'\nИНН: '+p.inn+'\nКПП: '+p.kpp+'\nНазначение: '+p.purpose;
+  navigator.clipboard&&navigator.clipboard.writeText(txt);
+  showToast('Реквизиты скопированы');
+}
+function confirmPayment(plan,price){
+  showToast('Чек отправлен на проверку. Тариф будет активирован в течение 1 часа.','success');
+  setTimeout(closeVoiceModal,1500);
+}
+function showToast(msg,type){
+  let t=document.createElement('div');
+  t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;padding:12px 24px;border-radius:50px;font-size:.9rem;font-weight:600;color:#fff;background:'+(type==='success'?'var(--green)':'var(--rose)')+';box-shadow:0 6px 24px rgba(0,0,0,.2);animation:fadeIn .3s ease';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='.4s';setTimeout(function(){t.remove()},400)},3000);
+}
+function showTrialDayNotification(){
+  if(!S.curUser)return;
+  let s=getSub(S.curUser);
+  if(!s.trial)return;
+  let daysLeft=Math.max(0,Math.ceil((s.expires-Date.now())/86400000));
+  let dayNum=7-daysLeft+1;
+  if(dayNum<1||dayNum>7)return;
+  let key='biosync_trial_day_'+dayNum+'_'+S.curUser;
+  let today=new Date().toDateString();
+  if(localStorage.getItem(key)===today)return;
+  localStorage.setItem(key,today);
+  let msgs=[
+    {t:'🔥 День 1 из 7',d:'Добро пожаловать в Premium! Попробуйте Соню — вашего ИИ-медиатора. Все функции открыты на 7 дней.',e:'🎉'},
+    {t:'🔥 День 2 из 7',d:'Откройте «Стратегию дня» — персональные советы под фазу цикла. Осталось 6 дней Premium.',e:'🧭'},
+    {t:'🔥 День 3 из 7',d:'Попробуйте «Выговориться» — голосовая сессия с AI-анализом эмоций. Осталось 5 дней.',e:'🎤'},
+    {t:'🔥 День 4 из 7',d:'Запустите парный ритуал — «Благодарность дня» сближает. Осталось 4 дня Premium.',e:'💝'},
+    {t:'🔥 День 5 из 7',d:'Посмотрите «Отчёт пары» от Сони — аналитика ваших отношений. Осталось 3 дня.',e:'📊'},
+    {t:'🔥 День 6 из 7',d:'Начните челлендж недели — 7 дней без критики. Осталось 2 дня Premium.',e:'🎯'},
+    {t:'🔥 День 7 из 7',d:'Последний день пробного периода! Оформите Premium, чтобы сохранить все функции.',e:'⏰'}
+  ];
+  let m=msgs[dayNum-1];
+  let t=document.createElement('div');
+  t.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;max-width:380px;width:90%;padding:16px 20px;border-radius:20px;background:var(--card);box-shadow:0 12px 40px rgba(0,0,0,.2);border:1px solid var(--border);animation:fadeIn .4s ease';
+  t.innerHTML='<div style="display:flex;align-items:flex-start;gap:12px"><div style="font-size:1.8rem">'+m.e+'</div><div style="flex:1"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">'+m.t+'</div><div style="font-size:.82rem;color:var(--text2);line-height:1.5">'+m.d+'</div></div><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text3);flex-shrink:0">✕</button></div>'+(dayNum>=5?'<div style="margin-top:10px;text-align:center"><button class="btn btn-p btn-sm" onclick="this.parentElement.parentElement.remove();showTariffs()" style="font-size:.82rem;padding:8px 20px">⭐ Оформить Premium</button></div>':'');
+  document.body.appendChild(t);
+  setTimeout(function(){if(t.parentElement)t.remove()},12000);
+}
 function checkConnectHash(){
   let m=location.hash.match(/^#connect=([A-Z0-9]{6})$/i);
   if(m)S._pendingConnect=m[1].toUpperCase();
@@ -2875,6 +3009,7 @@ function init(){
   if(ls)ls.value=_lang;
   checkConnectHash();
   lucide.createIcons(document.getElementById('p-landing'));
+  updateLandingTexts();
   // Try auto-login from remembered session
   if(!S.curUser){
     try{var remembered=JSON.parse(localStorage.getItem('biosync_remember')||'null')}catch(e){localStorage.removeItem('biosync_remember')}
@@ -2909,6 +3044,8 @@ function init(){
   }
   // Auto-save on page close
   window.addEventListener('beforeunload',function(){save()});
+  // Show trial day notification on load
+  setTimeout(showTrialDayNotification,2000);
 }
 init();
 </script>
