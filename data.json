@@ -1,6 +1,20 @@
 {
-  "users": [],
-  "curUser": null,
+  "users": [
+    {
+      "id": "bnof2ogxj",
+      "email": "elia-86tih@mail.ru",
+      "pass": "170686",
+      "name": "Елена",
+      "gender": "female",
+      "priv": {
+        "showPhase": true,
+        "showDay": true,
+        "showCareTips": true,
+        "showMood": false
+      }
+    }
+  ],
+  "curUser": "bnof2ogxj",
   "cycle": {},
   "logs": {},
   "couples": [],
@@ -9,5 +23,5 @@
   "subs": {},
   "voice": {},
   "_moodSaved": false,
-  "_theme": "light"
+  "_theme": "dark"
 }
