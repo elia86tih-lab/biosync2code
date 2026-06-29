@@ -26,7 +26,14 @@
   "couples": [],
   "notifs": {},
   "moodForm": {},
-  "subs": {},
+  "subs": {
+    "g0bnh83lg": {
+      "plan": "premium",
+      "trial": 0,
+      "expires": 1785333243541,
+      "monthly": true
+    }
+  },
   "voice": {},
   "_moodSaved": false,
   "_theme": "light",
