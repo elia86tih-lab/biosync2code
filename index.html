@@ -611,10 +611,41 @@ async function ghDirectSave(json){
   },3000);
 }
 function save(){let j=JSON.stringify(S);localStorage.setItem(LS,j);fetch(SVR+'/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:j}).catch(()=>{});ghDirectSave(S)}
-async function loadFromServer(){var loc=localStorage.getItem(LS);if(loc)return;try{let r=await fetch(SVR+'/api/data');if(!r.ok)return;let d=await r.json();if(d&&Object.keys(d).length){Object.assign(S,d);localStorage.setItem(LS,JSON.stringify(S))}}catch(e){}}
+async function loadFromServer(){
+  // On localhost: try server first
+  if(SVR){
+    try{let r=await fetch(SVR+'/api/data');if(r.ok){let d=await r.json();if(d&&Object.keys(d).length){Object.assign(S,d);localStorage.setItem(LS,JSON.stringify(S));return}}}catch(e){}
+  }
+  // On production (GitHub Pages): load from GitHub API
+  await ghDirectLoad();
+}
+let _ghLoadInProgress=false;
+async function ghDirectLoad(){
+  if(_ghLoadInProgress)return;
+  _ghLoadInProgress=true;
+  try{
+    const t=_ghToken,r=_ghRepo,p=_ghPath,b=_ghBranch;
+    if(!t||!r){_ghLoadInProgress=false;return}
+    const resp=await fetch('https://api.github.com/repos/'+r+'/contents/'+p+'?ref='+b,{headers:{Authorization:'Bearer '+t,Accept:'application/vnd.github.v3.raw'}});
+    if(!resp.ok){_ghLoadInProgress=false;return}
+    const text=await resp.text();
+    let d;
+    try{d=JSON.parse(text)}catch(e){_ghLoadInProgress=false;return}
+    if(d&&d.users&&d.users.length){
+      // Merge: server data takes priority for users, couples, subs
+      // but keep current session if user is logged in
+      let curUser=S.curUser;
+      Object.assign(S,d);
+      if(curUser&&S.users.find(u=>u.id===curUser))S.curUser=curUser;
+      localStorage.setItem(LS,JSON.stringify(S));
+    }
+  }catch(e){console.error('GitHub load error:',e)}
+  _ghLoadInProgress=false;
+}
 
-// Periodic auto-save to GitHub every 60s
-let _autoSaveTimer=setInterval(()=>{if(S.curUser)save()},60000);
+// Periodic auto-save to GitHub every 60s + load updates from other devices
+let _autoSaveTimer=setInterval(function(){if(S.curUser)save()},60000);
+let _autoLoadTimer=setInterval(function(){if(S.curUser)ghDirectLoad()},30000);
 function setupSync(){
   let tk=prompt(_('setup_gh_token'),_ghToken);
   if(tk===null)return;
@@ -934,8 +965,26 @@ function handleLogin(){
   let remember=document.getElementById('login-remember').checked;
   err('login-err','');
   if(!email||!pass){err('login-err',_('fill_fields'));return}
+  // Try to find user locally first
   let u=S.users.find(x=>x.email===email);
-  if(!u||u.pass!==pass){err('login-err',_('wrong_creds'));return}
+  if(!u){
+    // User not found locally — try loading from server (other device registration)
+    err('login-err','');
+    ghDirectLoad().then(function(){
+      let u2=S.users.find(x=>x.email===email);
+      if(!u2||u2.pass!==pass){err('login-err',_('wrong_creds'));return}
+      S.curUser=u2.id;
+      if(remember){
+        localStorage.setItem('biosync_remember',JSON.stringify({userId:u2.id,email:u2.email,name:u2.name}));
+      } else {
+        localStorage.removeItem('biosync_remember');
+      }
+      save();
+      showPhaseSplash(S.curUser,()=>navigate(u2.gender==='female'?'dash-female':'dash-male'));
+    });
+    return;
+  }
+  if(u.pass!==pass){err('login-err',_('wrong_creds'));return}
   S.curUser=u.id;
   if(remember){
     localStorage.setItem('biosync_remember',JSON.stringify({userId:u.id,email:u.email,name:u.name}));
@@ -3090,8 +3139,6 @@ function buildConnectLink(){
 
 // ====== INIT ======
 function init(){
-  // Load persisted data from server if available
-  loadFromServer();
   S._moodSaved=false;
   loadTheme();
   _lang=localStorage.getItem('biosync_lang')||'ru';
@@ -3101,38 +3148,40 @@ function init(){
   lucide.createIcons(document.getElementById('p-landing'));
   updateLandingTexts();
   updateAuthTexts();
-  // Try auto-login from remembered session
-  if(!S.curUser){
-    try{var remembered=JSON.parse(localStorage.getItem('biosync_remember')||'null')}catch(e){localStorage.removeItem('biosync_remember')}
-    if(remembered&&remembered.userId){
-      let u=S.users.find(x=>x.id===remembered.userId);
-      if(u){S.curUser=u.id;save()}
-      else localStorage.removeItem('biosync_remember');
-    }
-  }
-  if(S.curUser){
-    let u=S.users.find(x=>x.id===S.curUser);
-    if(u)navigate(u.gender==='female'?'dash-female':'dash-male');
-    else{S.curUser=null;save();navigate('landing')}
-  } else {
-    navigate('landing');
-    // Show invite banner on landing
-    if(S._pendingConnect){
-      let b=document.getElementById('p-landing');
-      if(b){
-        let invite=document.createElement('div');
-        invite.id='connect-invite';
-        invite.style.cssText='position:fixed;top:0;left:0;right:0;z-index:100;padding:14px;text-align:center;background:linear-gradient(135deg,var(--rose),var(--roseD));color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;box-shadow:0 4px 20px rgba(208,128,128,.3)';
-        invite.innerHTML='<i data-lucide="link" class="lx lx-sm"></i> Вас пригласили в пару! <span style="text-decoration:underline">Создайте аккаунт или войдите</span> →';lucide.createIcons(invite);
-        invite.onclick=()=>{navigate('register-male')};
-        b.appendChild(invite);
+  // Load from server, then try auto-login
+  loadFromServer().then(function(){
+    // After server data loaded, try auto-login
+    if(!S.curUser){
+      try{var remembered=JSON.parse(localStorage.getItem('biosync_remember')||'null')}catch(e){localStorage.removeItem('biosync_remember')}
+      if(remembered&&remembered.userId){
+        let u=S.users.find(x=>x.id===remembered.userId);
+        if(u){S.curUser=u.id;save()}
+        else localStorage.removeItem('biosync_remember');
       }
     }
-  }
-  // If tutorial was queued (page closed before it appeared), show it now
-  if(S._showTutorial&&S.curUser){
-    setTimeout(()=>{if(S._showTutorial){showTutorial();delete S._showTutorial;save()}},800);
-  }
+    if(S.curUser){
+      let u=S.users.find(x=>x.id===S.curUser);
+      if(u)navigate(u.gender==='female'?'dash-female':'dash-male');
+      else{S.curUser=null;save();navigate('landing')}
+    } else {
+      navigate('landing');
+      if(S._pendingConnect){
+        let b=document.getElementById('p-landing');
+        if(b){
+          let invite=document.createElement('div');
+          invite.id='connect-invite';
+          invite.style.cssText='position:fixed;top:0;left:0;right:0;z-index:100;padding:14px;text-align:center;background:linear-gradient(135deg,var(--rose),var(--roseD));color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;box-shadow:0 4px 20px rgba(208,128,128,.3)';
+          invite.innerHTML='<i data-lucide="link" class="lx lx-sm"></i> Вас пригласили в пару! <span style="text-decoration:underline">Создайте аккаунт или войдите</span> →';lucide.createIcons(invite);
+          invite.onclick=()=>{navigate('register-male')};
+          b.appendChild(invite);
+        }
+      }
+    }
+    // If tutorial was queued, show it now
+    if(S._showTutorial&&S.curUser){
+      setTimeout(()=>{if(S._showTutorial){showTutorial();delete S._showTutorial;save()}},800);
+    }
+  });
   // Auto-save on page close
   window.addEventListener('beforeunload',function(){save()});
   // Show trial day notification on load
