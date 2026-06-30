@@ -712,8 +712,7 @@ function getSub(uid){
   return s;
 }
 function setSub(uid,plan,months,isYearly){
-  let ms=months*30*86400000;
-  if(isYearly)ms=months*365*86400000/12*months;
+  let ms=isYearly?365*86400000:months*30*86400000;
   S.subs[uid]={plan,trial:0,expires:Date.now()+ms,monthly:!isYearly};
   save();
 }
@@ -1645,23 +1644,23 @@ function getCoupleForMale(){
 function mCompass(){
   let cp=getCoupleForMale();
   if(!cp||cp.status==='pending'||cp.status==='pending_approval'){
-    let msg=cp?'Запрос отправлен. Ожидайте подтверждения от партнерши.':'Не подключен к паре. Запросите код пары у партнерши.';
+    let msg=cp?_('m_connect_pending'):_('m_connect_none');
     let connectBtn=S._pendingConnect?`
       <div style="margin-top:16px;padding:16px;background:linear-gradient(135deg,var(--roseL),transparent);border-radius:16px;border:1px solid rgba(224,168,168,.2)">
-        <p style="font-size:.95rem;font-weight:600;margin-bottom:10px">🔗 Обнаружена ссылка-приглашение</p>
-        <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">Код: <strong style="font-family:monospace;letter-spacing:2px;color:var(--roseD)">${S._pendingConnect}</strong></p>
-        <button class="btn btn-p btn-sm" onclick="handleConnectFromInvite()">✅ Подключиться сейчас</button>
-        <button class="btn btn-g btn-sm" onclick="delete S._pendingConnect;renderMaleDash()" style="margin-left:8px">Отклонить</button>
+        <p style="font-size:.95rem;font-weight:600;margin-bottom:10px">🔗 ${_('m_invite_found')}</p>
+        <p style="font-size:.85rem;color:var(--text2);margin-bottom:12px">${_('connect_code')}: <strong style="font-family:monospace;letter-spacing:2px;color:var(--roseD)">${S._pendingConnect}</strong></p>
+        <button class="btn btn-p btn-sm" onclick="handleConnectFromInvite()">✅ ${_('m_connect_now')}</button>
+        <button class="btn btn-g btn-sm" onclick="delete S._pendingConnect;renderMaleDash()" style="margin-left:8px">${_('m_decline')}</button>
       </div>`:'';
     return `<div class="ps-bar disc"><span>⏳</span><span>${msg}</span></div>
-      <div class="emp"><div class="emp-ic">🔗</div><h3>Подключитесь к партнерше</h3>
-      <p>Попросите у партнерши код пары.</p></div>${connectBtn}`;
+      <div class="emp"><div class="emp-ic">🔗</div><h3>${_('m_connect_title')}</h3>
+      <p>${_('m_connect_desc')}</p></div>${connectBtn}`;
   }
-  if(cp.status!=='active')return `<div class="emp"><div class="emp-ic">🔗</div><h3>Ожидание</h3></div>`;
+  if(cp.status!=='active')return `<div class="emp"><div class="emp-ic">🔗</div><h3>${_('m_waiting')}</h3></div>`;
   let fu=S.users.find(x=>x.id===cp.fId);
   let ph=getPhase(cp.fId);
-  if(!ph)return `<div class="ps-bar conn"><span>💞</span><span>Подключен к ${fu?fu.name:'партнерше'}</span></div>
-    <div class="emp"><div class="emp-ic">📊</div><h3>Партнерша еще не настроила цикл</h3></div>`;
+  if(!ph)return `<div class="ps-bar conn"><span>💞</span><span>${_('m_connected_to')} ${fu?fu.name:_('partner_name')}</span></div>
+    <div class="emp"><div class="emp-ic">📊</div><h3>${_('m_no_cycle')}</h3></div>`;
   let priv=getUserPriv(cp.fId);
   if(!priv.showPhase)return `<div class="ps-bar conn"><span>💞</span><span>Подключен к ${fu?fu.name:'партнерше'}</span></div>
     <div class="emp"><div class="emp-ic">🔒</div><h3>Доступ ограничен</h3>
@@ -1705,7 +1704,8 @@ function mCompass(){
     <div class="pd"><span>🌊 ${priv.showDay?_('wave_day_short',ph.day,ph.cl):_('phase_word')+': '+_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])}</span><span>📍 ${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])} — ${_(['wave_seed','wave_sprout','wave_flower','wave_fall'][ph.phaseId])}</span></div>
     ${renderPhaseGarden(ph, cp.fId)}
     </div>
-    <div class="text-center mb-2"><button class="btn btn-g btn-sm" onclick="genNotifs()">🔄 Сгенерировать подсказки</button></div>`;
+    <div class="text-center mb-2"><button class="btn btn-g btn-sm" onclick="genNotifs()">🔄 ${_('gen_tips')}</button></div>`;
+    return html;
 }
 
 function mStrategy(){
@@ -1786,8 +1786,8 @@ function mHistory(){
 function mNotifs(){
   let cp=getCoupleForMale();
   let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <h3>🔔 Подсказки</h3>
-    <button class="btn btn-g btn-sm" onclick="genNotifs()">🔄 Обновить</button></div>`;
+    <h3>${ic('bell')} ${_('mtab_tips')}</h3>
+    <button class="btn btn-g btn-sm" onclick="genNotifs()">🔄 ${_('refresh')}</button></div>`;
   let ns=S.notifs[S.curUser]||[];
   if(!ns.length){
     html+=`<div class="emp"><div class="emp-ic">🔔</div><h3>Нет подсказок</h3>
@@ -2103,6 +2103,23 @@ const _T={
 'invite_banner':{ru:'Вас пригласили в пару!',en:'You\'ve been invited to a couple!',zh:'您被邀请加入情侣！',hi:'आपको एक जोड़े में आमंत्रित किया गया है!',es:'¡Te invitaron a una pareja!',ar:'تمت دعوتك للانضمام إلى زوجين!',fr:'Vous avez été invité à un couple !',bn:'আপনাকে একটি কাপলে আমন্ত্রণ জানানো হয়েছে!',pt:'Você foi convidado para um casal!',ur:'آپ کو ایک جوڑے میں مدعو کیا گیا ہے!',de:'Sie wurden zu einem Paar eingeladen!',id:'Anda diundang ke pasangan!',ja:'カップルに招待されました！',tr:'Bir çifte davet edildiniz!',ko:'커플에 초대되었습니다!'},
 'invite_create_or_login':{ru:'Создайте аккаунт или войдите',en:'Create account or log in',zh:'创建账号或登录',hi:'अकाउंट बनाएं या लॉग इन करें',es:'Crea cuenta o inicia sesión',ar:'أنشئ حسابًا أو سجل الدخول',fr:'Créez un compte ou connectez-vous',bn:'অ্যাকাউন্ট তৈরি করুন বা লগ ইন করুন',pt:'Crie conta ou entre',ur:'اکاؤنٹ بنائیں یا لاگ ان کریں',de:'Konto erstellen oder anmelden',id:'Buat akun atau masuk',ja:'アカウントを作成またはログイン',tr:'Hesap oluştur veya giriş yap',ko:'계정 만들기 또는 로그인'},
 'back':{ru:'Назад',en:'Back',zh:'返回',hi:'वापस',es:'Atrás',ar:'رجوع',fr:'Retour',bn:'ফিরে যান',pt:'Voltar',ur:'واپس',de:'Zurück',id:'Kembali',ja:'戻る',tr:'Geri',ko:'뒤로'},
+'gen_tips':{ru:'Сгенерировать подсказки',en:'Generate tips',zh:'生成提示',hi:'सुझाव बनाएं',es:'Generar consejos',ar:'إنشاء نصائح',fr:'Générer des conseils',bn:'টিপস তৈরি করুন',pt:'Gerar dicas',ur:'مشورے بنائیں',de:'Tipps generieren',id:'Buat tips',ja:'ヒントを生成',tr:'İpuçları oluştur',ko:'팁 생성'},
+'refresh':{ru:'Обновить',en:'Refresh',zh:'刷新',hi:'ताज़ा करें',es:'Actualizar',ar:'تحديث',fr:'Actualiser',bn:'রিফ্রেশ',pt:'Atualizar',ur:'تازہ کریں',de:'Aktualisieren',id:'Segarkan',ja:'更新',tr:'Yenile',ko:'새로고침'},
+'partner_name':{ru:'партнерша',en:'partner',zh:'伴侣',hi:'साथी',es:'pareja',ar:'شريكة',fr:'partenaire',bn:'সঙ্গী',pt:'parceira',ur:'ساتھی',de:'Partnerin',id:'pasangan',ja:'パートナー',tr:'partner',ko:'파트너'},
+'m_connect_pending':{ru:'Запрос отправлен. Ожидайте подтверждения от партнерши.',en:'Request sent. Awaiting partner confirmation.',zh:'请求已发送。等待伴侣确认。',hi:'अनुरोध भेजा गया। साथी की पुष्टि की प्रतीक्षा करें।',es:'Solicitud enviada. Esperando confirmación de tu pareja.',ar:'تم إرسال الطلب. بانتظار تأكيد الشريكة.',fr:'Demande envoyée. En attente de confirmation de la partenaire.',bn:'অনুরোধ পাঠানো হয়েছে। সঙ্গীর নিশ্চিতকরণের অপেক্ষায়।',pt:'Solicitação enviada. Aguardando confirmação da parceira.',ur:'درخواست بھیجی گئی۔ ساتھی کی تصدیق کا انتظار کریں۔',de:'Anfrage gesendet. Warte auf Bestätigung der Partnerin.',id:'Permintaan dikirim. Menunggu konfirmasi pasangan.',ja:'リクエスト送信済み。パートナーの確認待ち。',tr:'İstek gönderildi. Partner onayı bekleniyor.',ko:'요청 전송됨. 파트너 확인 대기 중.'},
+'m_connect_none':{ru:'Не подключен к паре. Запросите код пары у партнерши.',en:'Not connected. Ask your partner for the couple code.',zh:'未连接。向伴侣索要情侣代码。',hi:'जुड़ा नहीं। साथी से कपल कोड मांगें।',es:'No conectado. Pide el código de pareja a tu pareja.',ar:'غير متصل. اطلب رمز الزوجين من شريكتك.',fr:'Non connecté. Demandez le code de couple à votre partenaire.',bn:'সংযুক্ত নয়। সঙ্গীর কাছ থেকে কাপল কোড চান।',pt:'Não conectado. Peça o código do casal à sua parceira.',ur:'منسلک نہیں۔ ساتھی سے جوڑے کا کوڈ مانگیں۔',de:'Nicht verbunden. Fordern Sie den Paarcode von Ihrer Partnerin an.',id:'Belum terhubung. Minta kode pasangan dari pasangan Anda.',ja:'未接続。パートナーにカップルコードを求めてください。',tr:'Bağlı değil. Partnerinizden çift kodunu isteyin.',ko:'연결되지 않음. 파트너에게 커플 코드를 요청하세요.'},
+'m_invite_found':{ru:'Обнаружена ссылка-приглашение',en:'Invitation link found',zh:'发现邀请链接',hi:'निमंत्रण लिंक मिला',es:'Enlace de invitación encontrado',ar:'تم العثور على رابط دعوة',fr:'Lien d\'invitation trouvé',bn:'আমন্ত্রণ লিংক পাওয়া গেছে',pt:'Link de convite encontrado',ur:'دعوت نامہ لنک ملا',de:'Einladungslink gefunden',id:'Tautan undangan ditemukan',ja:'招待リンクが見つかりました',tr:'Davet bağlantısı bulundu',ko:'초대 링크 발견'},
+'m_connect_now':{ru:'Подключиться сейчас',en:'Connect now',zh:'立即连接',hi:'अभी जुड़ें',es:'Conectar ahora',ar:'اتصل الآن',fr:'Connecter maintenant',bn:'এখন সংযুক্ত হন',pt:'Conectar agora',ur:'ابھی جڑیں',de:'Jetzt verbinden',id:'Hubungkan sekarang',ja:'今すぐ接続',tr:'Şimdi bağlan',ko:'지금 연결'},
+'m_decline':{ru:'Отклонить',en:'Decline',zh:'拒绝',hi:'अस्वीकार',es:'Rechazar',ar:'رفض',fr:'Refuser',bn:'প্রত্যাখ্যান',pt:'Recusar',ur:'مسترد',de:'Ablehnen',id:'Tolak',ja:'拒否',tr:'Reddet',ko:'거절'},
+'m_connect_title':{ru:'Подключитесь к партнерше',en:'Connect to your partner',zh:'连接到伴侣',hi:'साथी से जुड़ें',es:'Conéctate con tu pareja',ar:'اتصل بشريكتك',fr:'Connectez-vous à votre partenaire',bn:'সঙ্গীর সাথে সংযুক্ত হন',pt:'Conecte-se à sua parceira',ur:'ساتھی سے جڑیں',de:'Mit Ihrer Partnerin verbinden',id:'Hubungkan ke pasangan',ja:'パートナーに接続',tr:'Partnerinize bağlanın',ko:'파트너에게 연결'},
+'m_connect_desc':{ru:'Попросите у партнерши код пары.',en:'Ask your partner for the couple code.',zh:'向伴侣索要情侣代码。',hi:'साथी से कपल कोड मांगें।',es:'Pide el código de pareja a tu pareja.',ar:'اطلب رمز الزوجين من شريكتك.',fr:'Demandez le code de couple à votre partenaire.',bn:'সঙ্গীর কাছ থেকে কাপল কোড চান।',pt:'Peça o código do casal à sua parceira.',ur:'ساتھی سے جوڑے کا کوڈ مانگیں۔',de:'Fordern Sie den Paarcode von Ihrer Partnerin an.',id:'Minta kode pasangan dari pasangan Anda.',ja:'パートナーにカップルコードを求めてください。',tr:'Partnerinizden çift kodunu isteyin.',ko:'파트너에게 커플 코드를 요청하세요.'},
+'m_waiting':{ru:'Ожидание',en:'Waiting',zh:'等待',hi:'प्रतीक्षा',es:'Esperando',ar:'بانتظار',fr:'En attente',bn:'অপেক্ষা',pt:'Aguardando',ur:'انتظار',de:'Warten',id:'Menunggu',ja:'待機中',tr:'Bekliyor',ko:'대기 중'},
+'m_connected_to':{ru:'Подключен к',en:'Connected to',zh:'已连接到',hi:'से जुड़ा',es:'Conectado a',ar:'متصل بـ',fr:'Connecté à',bn:'সংযুক্ত',pt:'Conectado a',ur:'سے منسلک',de:'Verbunden mit',id:'Terhubung ke',ja:'接続先:',tr:'Bağlı:',ko:'연결됨:'},
+'m_no_cycle':{ru:'Партнерша еще не настроила цикл',en:'Partner hasn\'t set up cycle yet',zh:'伴侣尚未设置周期',hi:'साथी ने अभी तक चक्र सेट नहीं किया',es:'Tu pareja aún no ha configurado el ciclo',ar:'لم تقم الشريكة بإعداد الدورة بعد',fr:'Votre partenaire n\'a pas encore configuré son cycle',bn:'সঙ্গী এখনও চক্র সেট করেননি',pt:'Sua parceira ainda não configurou o ciclo',ur:'ساتھی نے ابھی تک چکر سیٹ نہیں کیا',de:'Partnerin hat den Zyklus noch nicht eingerichtet',id:'Pasangan belum mengatur siklus',ja:'パートナーはまだ周期を設定していません',tr:'Partner henüz döngüsünü ayarlamadı',ko:'파트너가 아직 주기를 설정하지 않았습니다'},
+'m_no_strategy':{ru:'Нет стратегии',en:'No strategy',zh:'无策略',hi:'कोई रणनीति नहीं',es:'Sin estrategia',ar:'لا استراتيجية',fr:'Pas de stratégie',bn:'কোন কৌশল নেই',pt:'Sem estratégia',ur:'کوئی حکمت عملی نہیں',de:'Keine Strategie',id:'Tidak ada strategi',ja:'戦略なし',tr:'Strateji yok',ko:'전략 없음'},
+'m_no_data':{ru:'Нет данных',en:'No data',zh:'无数据',hi:'कोई डेटा नहीं',es:'Sin datos',ar:'لا بيانات',fr:'Pas de données',bn:'কোন ডেটা নেই',pt:'Sem dados',ur:'کوئی ڈیٹا نہیں',de:'Keine Daten',id:'Tidak ada data',ja:'データなし',tr:'Veri yok',ko:'데이터 없음'},
+'m_no_tips':{ru:'Нет подсказок',en:'No tips',zh:'无提示',hi:'कोई सुझाव नहीं',es:'Sin consejos',ar:'لا نصائح',fr:'Pas de conseils',bn:'কোন টিপস নেই',pt:'Sem dicas',ur:'کوئی مشورے نہیں',de:'Keine Tipps',id:'Tidak ada tips',ja:'ヒントなし',tr:'İpucu yok',ko:'팁 없음'},
+'m_gen_test':{ru:'Сгенерировать тестовые',en:'Generate test tips',zh:'生成测试提示',hi:'परीक्षण सुझाव बनाएं',es:'Generar consejos de prueba',ar:'إنشاء نصائح تجريبية',fr:'Générer des conseils de test',bn:'পরীক্ষামূলক টিপস তৈরি করুন',pt:'Gerar dicas de teste',ur:'ٹیسٹ مشورے بنائیں',de:'Test-Tipps generieren',id:'Buat tips uji',ja:'テストヒントを生成',tr:'Test ipuçları oluştur',ko:'테스트 팁 생성'},
 };
 function _(key,...args){
   var t=(_T[key]&&_T[key][_lang])||(_T[key]&&_T[key].ru)||key;
