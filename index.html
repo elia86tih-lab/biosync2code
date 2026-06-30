@@ -625,8 +625,8 @@ async function loadFromServer(){
   await ghDirectLoad();
 }
 let _ghLoadInProgress=false;
-async function ghDirectLoad(){
-  if(_ghLoadInProgress)return;
+async function ghDirectLoad(force){
+  if(_ghLoadInProgress&&!force)return;
   _ghLoadInProgress=true;
   try{
     const t=_ghToken,r=_ghRepo,p=_ghPath,b=_ghBranch;
@@ -637,12 +637,55 @@ async function ghDirectLoad(){
     let d;
     try{d=JSON.parse(text)}catch(e){_ghLoadInProgress=false;return}
     if(d&&d.users&&d.users.length){
-      // Merge: server data takes priority for users, couples, subs
-      // but keep current session if user is logged in
+      // Deep-merge: don't lose local-only users (not yet synced to server)
       let curUser=S.curUser;
-      Object.assign(S,d);
+      // Merge users by id (keep local + remote, remote wins on conflict)
+      if(Array.isArray(d.users)){
+        let localIds=new Set(S.users.map(u=>u.id));
+        for(let ru of d.users){
+          let li=S.users.findIndex(u=>u.id===ru.id);
+          if(li>=0)S.users[li]=ru;
+          else if(!localIds.has(ru.id))S.users.push(ru);
+        }
+      }
+      // Merge couples by fId+mId (keep local + remote)
+      if(Array.isArray(d.couples)){
+        for(let rc of d.couples){
+          let li=S.couples.findIndex(c=>c.fId===rc.fId&&c.mId===rc.mId||c.code===rc.code);
+          if(li>=0)S.couples[li]=rc;
+          else S.couples.push(rc);
+        }
+      }
+      // Merge notifs, subs, cycle, logs, moodForm, voice by key
+      for(let key of ['notifs','subs','cycle','logs','moodForm','voice']){
+        if(d[key]&&typeof d[key]==='object'){
+          if(!S[key])S[key]={};
+          for(let k in d[key]){
+            // For arrays (notifs), merge by id; for objects, remote wins
+            if(Array.isArray(d[key][k])&&Array.isArray(S[key][k])){
+              let localIds=new Set(S[key][k].map(n=>n.id||JSON.stringify(n)));
+              for(let item of d[key][k]){
+                let iid=item.id||JSON.stringify(item);
+                if(!localIds.has(iid))S[key][k].push(item);
+              }
+            }else{
+              S[key][k]=d[key][k];
+            }
+          }
+        }
+      }
       if(curUser&&S.users.find(u=>u.id===curUser))S.curUser=curUser;
       localStorage.setItem(LS,JSON.stringify(S));
+      // Re-render current dashboard if visible
+      if(curUser){
+        let u=S.users.find(x=>x.id===curUser);
+        if(u){
+          let onFemale=document.getElementById('p-dash-female').classList.contains('active');
+          let onMale=document.getElementById('p-dash-male').classList.contains('active');
+          if(onFemale&&typeof renderFemaleDash==='function')renderFemaleDash();
+          if(onMale&&typeof renderMaleDash==='function')renderMaleDash();
+        }
+      }
     }
   }catch(e){console.error('GitHub load error:',e)}
   _ghLoadInProgress=false;
@@ -933,8 +976,10 @@ function err(id,msg){let e=document.getElementById(id);if(!e)return;e.textConten
 
 // ====== AUTH ======
 function goToLogin(email){
-  document.getElementById('login-email').value=email||'';
-  document.getElementById('login-pass').value='';
+  let ee=document.getElementById('login-email');
+  let ep=document.getElementById('login-pass');
+  if(ee)ee.value=email||'';
+  if(ep)ep.value='';
   navigate('login');
 }
 
@@ -949,9 +994,12 @@ function quickLogin(){
 
 function clearRemembered(){
   localStorage.removeItem('biosync_remember');
-  document.getElementById('login-quick').style.display='none';
-  document.getElementById('login-email').value='';
-  document.getElementById('login-pass').value='';
+  let qb=document.getElementById('login-quick');
+  let ee=document.getElementById('login-email');
+  let ep=document.getElementById('login-pass');
+  if(qb)qb.style.display='none';
+  if(ee)ee.value='';
+  if(ep)ep.value='';
 }
 
 function checkRemembered(){
@@ -959,15 +1007,19 @@ function checkRemembered(){
   if(!remembered||!remembered.userId)return;
   let u=S.users.find(x=>x.id===remembered.userId);
   if(!u){localStorage.removeItem('biosync_remember');return}
-  document.getElementById('login-email').value=remembered.email||u.email||'';
-  document.getElementById('login-quick-name').textContent=u.name||'';
-  document.getElementById('login-quick').style.display='block';
+  let ee=document.getElementById('login-email');
+  let qn=document.getElementById('login-quick-name');
+  let qb=document.getElementById('login-quick');
+  if(ee)ee.value=remembered.email||u.email||'';
+  if(qn)qn.textContent=u.name||'';
+  if(qb)qb.style.display='block';
 }
 
 function handleLogin(){
-  let email=document.getElementById('login-email').value.trim();
+  let email=document.getElementById('login-email').value.trim().toLowerCase();
   let pass=document.getElementById('login-pass').value;
   let remember=document.getElementById('login-remember').checked;
+  let btn=(window.event&&window.event.target)?window.event.target.closest('button'):null;
   err('login-err','');
   if(!email||!pass){err('login-err',_('fill_fields'));return}
   // Try to find user locally first
@@ -975,8 +1027,10 @@ function handleLogin(){
   if(!u){
     // User not found locally — try loading from server (other device registration)
     err('login-err','');
-    ghDirectLoad().then(function(){
+    if(btn){btn.disabled=true;btn.dataset.origText=btn.innerHTML;btn.innerHTML='<i data-lucide="loader-2" class="lx lx-sm"></i> '+_('loading');lucide.createIcons(btn)}
+    ghDirectLoad(true).then(function(){
       let u2=S.users.find(x=>x.email===email);
+      if(btn){btn.disabled=false;btn.innerHTML=btn.dataset.origText;lucide.createIcons(btn)}
       if(!u2||u2.pass!==pass){err('login-err',_('wrong_creds'));return}
       S.curUser=u2.id;
       if(remember){
@@ -986,6 +1040,9 @@ function handleLogin(){
       }
       save();
       showPhaseSplash(S.curUser,()=>navigate(u2.gender==='female'?'dash-female':'dash-male'));
+    }).catch(function(e){
+      if(btn){btn.disabled=false;btn.innerHTML=btn.dataset.origText;lucide.createIcons(btn)}
+      err('login-err',_('wrong_creds'));
     });
     return;
   }
@@ -1011,10 +1068,9 @@ function socialLogin(provider){
     showPhaseSplash(S.curUser,()=>navigate(existing.gender==='female'?'dash-female':'dash-male'));
     return
   }
-  var id=uid();
   var labels={google:'Google',vk:'VK',mail:'Mail',telegram:'Telegram',yandex:'Яндекс'};
   var name=labels[provider]||provider;
-  S.users.push({id,email:provider+'_'+id.slice(0,8)+'@social.biosync',pass:'',name,gender:'female',social:{provider,id:provider+'_'+id},priv:{showPhase:true,showDay:true,showCareTips:true,showMood:false}});
+  S.users.push({id,email:provider+'_'+id.slice(0,8)+'@social.biosync',pass:'',name,gender:'female',social:{provider,id:socialId},priv:{showPhase:true,showDay:true,showCareTips:true,showMood:false}});
   S.curUser=id;
   localStorage.setItem('biosync_remember',JSON.stringify({userId:id,email:provider+'_'+id.slice(0,8)+'@social.biosync',name}));
   save();
@@ -1023,10 +1079,11 @@ function socialLogin(provider){
 
 function handleRegFemale(){
   let name=document.getElementById('rf-name').value.trim();
-  let email=document.getElementById('rf-email').value.trim();
+  let email=document.getElementById('rf-email').value.trim().toLowerCase();
   let pass=document.getElementById('rf-pass').value;
   err('rf-err1','');
   if(!name||!email||!pass){err('rf-err1',_('fill_fields'));return}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err('rf-err1',_('bad_email'));return}
   if(pass.length<6){err('rf-err1',_('pass_short'));return}
    if(S.users.find(x=>x.email===email)){
     err('rf-err1',_('email_taken'));
@@ -1059,10 +1116,11 @@ function skipCycleSetup(){
 
 function handleRegMale(){
   let name=document.getElementById('rm-name').value.trim();
-  let email=document.getElementById('rm-email').value.trim();
+  let email=document.getElementById('rm-email').value.trim().toLowerCase();
   let pass=document.getElementById('rm-pass').value;
   err('rm-err1','');
   if(!name||!email||!pass){err('rm-err1',_('fill_fields'));return}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){err('rm-err1',_('bad_email'));return}
   if(pass.length<6){err('rm-err1',_('pass_short'));return}
   if(S.users.find(x=>x.email===email)){
     err('rm-err1',_('email_taken'));
@@ -1098,9 +1156,8 @@ function handleConnect(){
   // notify female
   if(!S.notifs[cp.fId])S.notifs[cp.fId]=[];
   let mu=S.users.find(u=>u.id===S.curUser);
-  S.notifs[cp.fId].push({id:uid(),type:'connection',title:(mu?mu.name:'Партнёр')+' хочет подключиться',
-    body:'Разрешите доступ к данным вашего цикла? Он увидит обобщённые фазы и подсказки по заботе.',
-    read:0,createdAt:new Date().toISOString()});
+  S.notifs[cp.fId].push({id:uid(),type:'connection',title:(mu?mu.name:_('partner'))+' '+_('wants_to_connect'),
+    body:_('connect_approve_body'),read:0,createdAt:new Date().toISOString()});
   save();
   finishMaleReg();
 }
@@ -1954,6 +2011,11 @@ const _T={
 'pass_short':{ru:'Пароль минимум 6 символов',en:'Password must be at least 6 characters',zh:'密码至少6个字符',hi:'पासवर्ड कम से कम 6 अक्षर का होना चाहिए',es:'La contraseña debe tener al menos 6 caracteres',ar:'يجب أن تكون كلمة المرور 6 أحرف على الأقل',fr:'Le mot de passe doit comporter au moins 6 caractères',bn:'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে',pt:'A senha deve ter pelo menos 6 caracteres',ur:'پاس ورڈ کم از کم 6 حروف کا ہو',de:'Passwort muss mindestens 6 Zeichen lang sein',id:'Kata sandi minimal 6 karakter',ja:'パスワードは6文字以上必要です',tr:'Şifre en az 6 karakter olmalı',ko:'비밀번호는 최소 6자 이상이어야 합니다'},
 'email_taken':{ru:'Этот email уже зарегистрирован.',en:'This email is already registered.',zh:'此邮箱已注册。',hi:'यह ईमेल पहले से पंजीकृत है।',es:'Este email ya está registrado.',ar:'هذا البريد الإلكتروني مسجل بالفعل.',fr:'Cet email est déjà enregistré.',bn:'এই ইমেইল ইতিমধ্যে নিবন্ধিত।',pt:'Este email já está registrado.',ur:'یہ ای میل پہلے سے رجسٹرڈ ہے۔',de:'Diese E-Mail ist bereits registriert.',id:'Email ini sudah terdaftar.',ja:'このメールは既に登録されています。',tr:'Bu e-posta zaten kayıtlı.',ko:'이 이메일은 이미 등록되어 있습니다.'},
 'login_instead':{ru:'Войти в аккаунт',en:'Sign in',zh:'登录账号',hi:'खाते में लॉग इन करें',es:'Iniciar sesión',ar:'تسجيل الدخول',fr:'Se connecter',bn:'অ্যাকাউন্টে লগইন',pt:'Entrar na conta',ur:'اکاؤنٹ میں لاگ ان',de:'Anmelden',id:'Masuk ke akun',ja:'ログイン',tr:'Giriş yap',ko:'로그인'},
+'loading':{ru:'Загрузка…',en:'Loading…',zh:'加载中…',hi:'लोड हो रहा है…',es:'Cargando…',ar:'جار التحميل…',fr:'Chargement…',bn:'লোড হচ্ছে…',pt:'Carregando…',ur:'لوڈ ہو رہا ہے…',de:'Laden…',id:'Memuat…',ja:'読み込み中…',tr:'Yükleniyor…',ko:'로딩 중…'},
+'bad_email':{ru:'Некорректный email',en:'Invalid email',zh:'无效邮箱',hi:'अमान्य ईमेल',es:'Email no válido',ar:'بريد إلكتروني غير صالح',fr:'Email invalide',bn:'অবৈধ ইমেইল',pt:'Email inválido',ur:'غلط ای میل',de:'Ungültige E-Mail',id:'Email tidak valid',ja:'無効なメール',tr:'Geçersiz e-posta',ko:'잘못된 이메일'},
+'partner':{ru:'Партнёр',en:'Partner',zh:'伴侣',hi:'साथी',es:'Pareja',ar:'شريك',fr:'Partenaire',bn:'সঙ্গী',pt:'Parceiro',ur:'ساتھی',de:'Partner',id:'Pasangan',ja:'パートナー',tr:'Partner',ko:'파트너'},
+'wants_to_connect':{ru:'хочет подключиться',en:'wants to connect',zh:'想要连接',hi:'जुड़ना चाहता है',es:'quiere conectarse',ar:'يريد الاتصال',fr:'veut se connecter',bn:'সংযুক্ত হতে চায়',pt:'quer se conectar',ur:'جوڑنا چاہتا ہے',de:'möchte sich verbinden',id:'ingin terhubung',ja:'接続したい',tr:'bağlanmak istiyor',ko:'연결을 원합니다'},
+'connect_approve_body':{ru:'Разрешите доступ к данным вашего цикла? Он увидит обобщённые фазы и подсказки по заботе.',en:'Grant access to your cycle data? He will see summarized phases and care tips.',zh:'允许访问您的周期数据？他将看到概括的阶段和关怀提示。',hi:'अपने चक्र डेटा तक पहुंच दें? उसे सारांश चरण और देखभाल युक्तियाँ दिखेंगी।',es:'¿Conceder acceso a los datos de tu ciclo? Verá las fases resumidas y los consejos de cuidado.',ar:'السماح بالوصول إلى بيانات دورتك؟ سيرى المراحل الملخصة ونصائح الرعاية.',fr:'Autoriser l\'accès à vos données de cycle ? Il verra les phases résumées et les conseils de soin.',bn:'আপনার চক্র ডেটাতে অ্যাক্সেস দিন? তিনি সারাংশ পর্যায় এবং যত্ন টিপস দেখতে পাবেন।',pt:'Permitir acesso aos dados do seu ciclo? Ele verá fases resumidas e dicas de cuidado.',ur:'اپنے چکر ڈیٹا تک رسائی دیں؟ اسے خلاصہ مراحل اور دیکھ بھال کے ٹپس دکھائی دیں گے۔',de:'Zugriff auf Ihre Zyklusdaten gewähren? Er sieht zusammengefasste Phasen und Pflegetipps.',id:'Berikan akses ke data siklus Anda? Dia akan melihat fase ringkasan dan tips perawatan.',ja:'周期データへのアクセスを許可しますか？彼は要約されたフェーズとケアのヒントを見ます。',tr:'Döngü verilerinize erişim izni verin? Özetlenmiş fazları ve bakım ipuçlarını görecek.',ko:'주기 데이터 접근을 허용하시겠습니까? 요약된 단계와 케어 팁을 보게 됩니다.'},
 'enter_period':{ru:'Укажите первый день последних месячных',en:'Enter the first day of your last period',zh:'输入上次月经的第一天',hi:'अंतिम मासिक का पहला दिन दर्ज करें',es:'Ingresa el primer día de tu último periodo',ar:'أدخل أول يوم من آخر دورة',fr:'Entrez le premier jour de vos dernières règles',bn:'শেষ মাসিকের প্রথম দিন লিখুন',pt:'Digite o primeiro dia da sua última menstruação',ur:'آخری ماہواری کا پہلا دن درج کریں',de:'Geben Sie den ersten Tag Ihrer letzten Periode ein',id:'Masukkan hari pertama haid terakhir',ja:'最後の生理の初日を入力',tr:'Son adetin ilk gününü girin',ko:'마지막 생리 첫날을 입력하세요'},
 'bad_cycle_len':{ru:'Некорректная длина цикла',en:'Invalid cycle length',zh:'周期长度无效',hi:'अमान्य चक्र लंबाई',es:'Duración de ciclo no válida',ar:'مدة دورة غير صالحة',fr:'Durée de cycle invalide',bn:'অবৈধ চক্র দৈর্ঘ্য',pt:'Duração de ciclo inválida',ur:'غلط چکر کی لمبائی',de:'Ungültige Zykluslänge',id:'Panjang siklus tidak valid',ja:'無効な周期の長さ',tr:'Geçersiz döngü süresi',ko:'잘못된 주기 길이'},
 'enter_code':{ru:'Введите код пары',en:'Enter couple code',zh:'输入情侣代码',hi:'कपल कोड दर्ज करें',es:'Ingresa el código de pareja',ar:'أدخل رمز الزوجين',fr:'Entrez le code de couple',bn:'কাপল কোড লিখুন',pt:'Digite o código do casal',ur:'جوڑے کا کوڈ درج کریں',de:'Paarcode eingeben',id:'Masukkan kode pasangan',ja:'カップルコードを入力',tr:'Çift kodunu girin',ko:'커플 코드 입력'},
