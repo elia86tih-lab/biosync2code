@@ -1568,7 +1568,10 @@ function fCouple(){
 function fMood(){
   let mf=S.moodForm[S.curUser]||{mood:'',energy:5,pain:0};
   let saved=S._moodSaved;
-  let html=`<div class="ms"><h3>${tooltip('📝 Как ты сегодня?','Дневник настроения','Отмечайте настроение и самочувствие каждый день — это помогает отслеживать цикл и лучше понимать себя.')}</h3>
+  let pred=sonyaPredict();
+  let adviceShort='';
+  if(pred.alert){adviceShort=`<div style="background:linear-gradient(135deg,rgba(27,158,140,.06),transparent);border-radius:14px;padding:12px 14px;margin-bottom:12px;border-left:3px solid var(--rose);display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="S._fTab='sonya';renderFemaleDash()"><span style="font-size:1.1rem;flex-shrink:0">🔮</span><div style="flex:1"><div style="font-weight:600;font-size:.8rem;color:var(--roseD);margin-bottom:2px">${_('sonya_advice_short')}</div><p style="font-size:.78rem;color:var(--text2);line-height:1.5">${pred.alert} · ${pred.moodAdvice}</p><p style="font-size:.72rem;color:var(--rose);margin-top:4px;font-weight:500">${_('sonya_advice_offer')}</p></div></div>`}
+  let html=`<div class="ms">${adviceShort}<h3>${tooltip('📝 Как ты сегодня?','Дневник настроения','Отмечайте настроение и самочувствие каждый день — это помогает отслеживать цикл и лучше понимать себя.')}</h3>
     <div class="mg">${MOODS.map(m=>`<button class="mb ${mf.mood===m.l?'sel':''}" onclick="setMood('${m.l}')">
       <span class="mb-emoji">${m.e}</span><span>${m.l}</span></button>`).join('')}</div>
     <div class="sg"><label><span>🔋 Энергия</span><span id="m-energy">${mf.energy}</span>/10</label>
@@ -2115,9 +2118,11 @@ const _T={
 'sonya_title':{ru:'Соня — ваш семейный ИИ-психолог',en:'Sonya — your family AI psychologist',zh:'索尼娅 — 您的家庭AI心理学家',hi:'सोन्या — आपका परिवार एआई मनोवैज्ञानिक',es:'Sonya — tu psicóloga IA familiar',ar:'سونيا — عالمة النفس بالذكاء الاصطناعي لعائلتك',fr:'Sonya — votre psychologue IA familial',bn:'সোনিয়া — আপনার পারিবারিক এআই মনোবিজ্ঞানী',pt:'Sonya — sua psicóloga IA familiar',ur:'سونیا — آپ کے خاندان کی اے آئی ماہر نفسیات',de:'Sonya — Ihre KI-Familienpsychologin',id:'Sonya — psikolog AI keluarga Anda',ja:'ソーニャ — あなたの家族AI心理学者',tr:'Sonya — aile AI psikoloğunuz',ko:'소냐 — 가족 AI 심리학자'},
 'sonya_24':{ru:'24/7 от BioSync',en:'24/7 from BioSync'},
 'sonya_tooltip':{ru:'ИИ-медиатор Соня',en:'AI mediator Sonya',zh:'AI调解员索尼娅',hi:'एआई-मध्यस्थ सोन्या',es:'Mediadora IA Sonya',ar:'وسيط الذكاء الاصطناعي سونيا',fr:'Médiatrice IA Sonya',bn:'এআই-মধ্যস্থ সোনিয়া',pt:'Mediadora IA Sonya',ur:'اے آئی ثالث سونیا',de:'KI-Mediatorin Sonya',id:'Mediator AI Sonya',ja:'AI調停者ソーニャ',tr:'AI arabulucu Sonya',ko:'AI 중재자 소냐'},
-'sonya_predictor':{ru:'Предиктор Сони',en:'Sonya\'s Predictor'},
+'sonya_predictor':{ru:'Совет Сони',en:'Sonya\'s Advice',zh:'索尼娅的建议',hi:'सोन्या की सलाह',es:'Consejo de Sonya',ar:'نصيحة سونيا',fr:'Conseil de Sonya',bn:'সোনিয়ার পরামর্শ',pt:'Conselho da Sonya',ur:'سونیا کا مشورہ',de:'Sonjas Rat',id:'Saran Sonya',ja:'ソーニャのアドバイス',tr:'Sonya\'nın tavsiyesi',ko:'소냐의 조언'},
+'sonya_advice_short':{ru:'Совет дня',en:'Daily advice',zh:'每日建议',hi:'दैनिक सलाह',es:'Consejo diario',ar:'نصيحة اليوم',fr:'Conseil du jour',bn:'দৈনিক পরামর্শ',pt:'Conselho diário',ur:'روزانہ مشورہ',de:'Täglicher Rat',id:'Saran harian',ja:'今日のアドバイス',tr:'Günlük tavsiye',ko:'오늘의 조언'},
+'sonya_advice_offer':{ru:'Хочешь развернутый совет и персональные практики? Открой раздел Сони — там я готова помочь глубже.',en:'Want a detailed advice and personalized practices? Open Sonya\'s section — I\'m ready to help deeper.',zh:'想要详细建议和个性化练习？打开索尼娅专区——我准备更深入地帮助你。',hi:'विस्तृत सलाह और व्यक्तिगत अभ्यास चाहिए? सोन्या खोलें — मैं गहराई से मदद करने के लिए तैयार हूं।',es:'¿Quieres un consejo detallado y prácticas personalizadas? Abre la sección de Sonya — estoy lista para ayudarte más.',ar:'تريد نصيحة مفصلة وممارسات شخصية؟ افتح قسم سونيا — أنا مستعدة لمساعدتك بشكل أعمق.',fr:'Vous voulez un conseil détaillé et des pratiques personnalisées ? Ouvrez la section Sonya — je suis prête à vous aider plus.',bn:'বিস্তারিত পরামর্শ এবং ব্যক্তিগত অনুশীলন চান? সোনিয়া খুলুন — আমি গভীরভাবে সাহায্য করতে প্রস্তুত।',pt:'Quer conselho detalhado e práticas personalizadas? Abra a seção da Sonya — estou pronta para ajudar mais.',ur:'تفصیلی مشورہ اور ذاتی مشقیں چاہیں؟ سونیا کا سیکشن کھولیں — میں گہرائی سے مدد کے لیے تیار ہوں۔',de:'Willst du einen detaillierten Rat und personalisierte Übungen? Öffne Sonjas Bereich — ich bin bereit, tiefer zu helfen.',id:'Ingin saran detail dan latihan personal? Buka bagian Sonya — saya siap membantu lebih dalam.',ja:'詳細なアドバイスと個別の練習が欲しい？ソーニャのセクションを開いて — もっと深くサポートする準備ができています。',tr:'Detaylı tavsiye ve kişisel pratikler mi istiyorsun? Sonya\'nın bölümünü aç — daha derin yardım etmeye hazırım.',ko:'상세한 조언과 맞춤 연습을 원하시나요? 소냐 섹션을 열어보세요 — 더 깊이 도와드릴 준비가 되어 있습니다.'},
 'sonya_try':{ru:'Попробуй Соню в деле',en:'Try Sonya in action',zh:'试试索尼娅',hi:'सोन्या को आज़माएं',es:'Prueba a Sonya',ar:'جرب سونيا',fr:'Essayez Sonya',bn:'সোনিয়াকে চেষ্টা করুন',pt:'Experimente a Sonya',ur:'سونیا کو آزمائیں',de:'Sonya ausprobieren',id:'Coba Sonya',ja:'ソーニャを試す',tr:'Sonya\'yı dene',ko:'소냐 체험'},
-'sonya_try_desc':{ru:'Медиатор, предиктор, тренер — ваш персональный ИИ-психолог.',en:'Mediator, predictor, coach — your personal AI psychologist.',zh:'调解员、预测者、教练——您的个人AI心理学家。',hi:'मध्यस्थ, भविष्यवक्ता, कोच — आपका व्यक्तिगत एआई मनोवैज्ञानिक।',es:'Mediadora, predictora, entrenadora — tu psicóloga IA personal.',ar:'وسيط، متوقعة، مدربة — عالمة النفس بالذكاء الاصطناعي الشخصية.',fr:'Médiatrice, prédictive, coach — votre psychologue IA personnel.',bn:'মধ্যস্থ, ভবিষ্যৎকথক, কোচ — আপনার ব্যক্তিগত এআই মনোবিজ্ঞানী।',pt:'Mediadora,预监察，treinadora — sua psicóloga IA pessoal.',ur:'ثالث، پیش گو، کوچ — آپ کا ذاتی اے آئی ماہر نفسیات۔',de:'Mediatorin, Vorhersagerin, Coach — Ihre persönliche KI-Psychologin.',id:'Mediator, peramal, pelatih — psikolog AI pribadi Anda.',ja:'調停者、予測者、コーチ — あなただけのAI心理学者。',tr:'Arabulucu, tahminci, koç — kişisel AI psikoloğunuz.',ko:'중재자, 예측자, 코치 — 개인 AI 심리학자.'},
+'sonya_try_desc':{ru:'Медиатор, советчик, тренер — ваш персональный ИИ-психолог.',en:'Mediator, advisor, coach — your personal AI psychologist.',zh:'调解员、顾问、教练——您的个人AI心理学家。',hi:'मध्यस्थ, सलाहकार, कोच — आपका व्यक्तिगत एआई मनोवैज्ञानिक।',es:'Mediadora, consejera, entrenadora — tu psicóloga IA personal.',ar:'وسيط، مستشارة، مدربة — عالمة النفس بالذكاء الاصطناعي الشخصية.',fr:'Médiatrice, conseillère, coach — votre psychologue IA personnel.',bn:'মধ্যস্থ, উপদেষ্টা, কোচ — আপনার ব্যক্তিগত এআই মনোবিজ্ঞানী।',pt:'Mediadora, conselheira, treinadora — sua psicóloga IA pessoal.',ur:'ثالث، مشیر، کوچ — آپ کا ذاتی اے آئی ماہر نفسیات۔',de:'Mediatorin, Beraterin, Coach — Ihre persönliche KI-Psychologin.',id:'Mediator, penasihat, pelatih — psikolog AI pribadi Anda.',ja:'調停者、アドバイザー、コーチ — あなただけのAI心理学者。',tr:'Arabulucu, danışman, koç — kişisel AI psikoloğunuz.',ko:'중재자, 조언자, 코치 — 개인 AI 심리학자.'},
 'sonya_get':{ru:'Оформить',en:'Subscribe',zh:'订阅',hi:'सदस्यता लें',es:'Suscribirse',ar:'اشترك',fr:'S\'abonner',bn:'সাবস্ক্রাইব',pt:'Assinar',ur:'سبسکرائب',de:'Abonnieren',id:'Berlangganan',ja:'登録',tr:'Abone ol',ko:'구독'},
 'sonya_try_btn':{ru:'Попробовать',en:'Try',zh:'试试',hi:'आज़माएं',es:'Probar',ar:'جرب',fr:'Essayer',bn:'চেষ্টা',pt:'Experimentar',ur:'آزمائیں',de:'Ausprobieren',id:'Coba',ja:'試す',tr:'Dene',ko:'체험'},
 'sonya_mediator':{ru:'Медиатор',en:'Mediator',zh:'调解员',hi:'मध्यस्थ',es:'Mediadora',ar:'وسيط',fr:'Médiatrice',bn:'মধ্যস্থ',pt:'Mediadora',ur:'ثالث',de:'Mediatorin',id:'Mediator',ja:'調停者',tr:'Arabulucu',ko:'중재자'},
@@ -2677,11 +2682,20 @@ function fSonya(){
     </div>
 
     ${pred.alert?`
-    <div style="background:linear-gradient(135deg,rgba(224,168,168,.1),transparent);border-radius:18px;padding:16px;margin-bottom:16px;border-left:4px solid var(--rose)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <span style="font-size:1.2rem">🔮</span><span style="font-weight:600;font-size:.9rem">${_('sonya_predictor')}</span>
+    <div style="background:linear-gradient(135deg,rgba(27,158,140,.08),rgba(0,240,255,.04));border-radius:20px;padding:20px;margin-bottom:16px;border:1px solid rgba(27,158,140,.15);box-shadow:0 4px 20px rgba(27,158,140,.06)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--roseD));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;box-shadow:0 2px 8px rgba(27,158,140,.25)">🔮</div>
+        <span style="font-weight:700;font-size:.95rem">${_('sonya_predictor')}</span>
       </div>
-      <p style="font-size:.85rem;color:var(--text2);line-height:1.6">${pred.alert} · ${pred.moodAdvice}</p>
+      <div style="margin-bottom:12px">
+        <div style="font-weight:600;font-size:.88rem;color:var(--roseD);margin-bottom:4px">${pred.alert}</div>
+        <p style="font-size:.85rem;color:var(--text2);line-height:1.7">${pred.moodAdvice}</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-p btn-sm" onclick="S._sonyaMode='mediate';renderFemaleDash()" style="flex:1;min-width:130px">💬 ${_('sonya_mediator')}</button>
+        <button class="btn btn-s btn-sm" onclick="S._sonyaMode='soothe';renderFemaleDash()" style="flex:1;min-width:130px">🧘 ${_('sonya_sos_mode')}</button>
+      </div>
+      ${!isPremium?`<div style="margin-top:10px;padding-top:10px;border-top:1px dashed rgba(27,158,140,.15)"><p style="font-size:.78rem;color:var(--rose);font-weight:500;line-height:1.5">${_('sonya_advice_offer')}</p><button class="btn btn-p btn-sm mt-1" onclick="showTariffs()">⭐ ${s.trial?_('sonya_get'):_('sonya_try_btn')}</button></div>`:''}
     </div>`:''}
 
     ${!isPremium?`
@@ -2970,7 +2984,7 @@ function mSonya(){
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:1.3rem">⭐</span>
         <div style="flex:1"><div style="font-weight:600;font-size:.85rem">${_('m_sonya_prem')}</div>
-        <p style="font-size:.78rem;color:var(--text2)">Соня-переводчик, предиктор и тренер доступны ${s.trial?'в пробном периоде':'с Premium'}</p></div>
+        <p style="font-size:.78rem;color:var(--text2)">Соня-переводчик, советчик и тренер доступны ${s.trial?'в пробном периоде':'с Premium'}</p></div>
         <button class="btn btn-p btn-sm" onclick="showTariffs()">⭐ ${s.trial?'Оформить':'Попробовать'}</button>
       </div>
     </div>`:''}
