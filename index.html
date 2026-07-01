@@ -121,16 +121,17 @@ input,button,select,textarea{font-family:inherit}
 .dash-hdr{background:rgba(255,255,255,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   padding:16px 28px;display:flex;align-items:center;justify-content:space-between;
   border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
-.dash-logo{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:6px}
+.dash-logo{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:6px;cursor:pointer}
 .dash-logo span{background:linear-gradient(135deg,var(--rose),var(--roseD));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .dash-r{display:flex;align-items:center;gap:12px}
 .dash-user{font-size:.95rem;color:var(--text2);font-weight:500;padding:6px 14px;background:var(--bg);border-radius:50px}
 .dash-c{flex:1;padding:28px;max-width:880px;margin:0 auto;width:100%}
+.dash-menu-btn{display:none;position:fixed;top:14px;left:14px;z-index:200;width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;align-items:center;justify-content:center;font-size:1.2rem}
 
 /* ====== TABS ====== */
-.tabs{display:flex;gap:6px;margin-bottom:24px;overflow-x:auto;padding:6px 8px;
-  background:rgba(255,255,255,.6);border-radius:16px;border:1px solid var(--border);backdrop-filter:blur(8px);justify-content:center;
-  scrollbar-width:none;-ms-overflow-style:none}
+.tabs{display:flex;gap:6px;margin-bottom:24px;overflow-x:auto;overflow-y:hidden;padding:6px 8px;
+  background:rgba(255,255,255,.6);border-radius:16px;border:1px solid var(--border);backdrop-filter:blur(8px);justify-content:flex-start;
+  scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 .tabs::-webkit-scrollbar{display:none}
 .tab-btn{padding:8px 18px;border:none;border-radius:14px;font-size:.8rem;font-weight:600;cursor:pointer;
   background:transparent;color:var(--text3);transition:all .25s cubic-bezier(.25,.8,.25,1);display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.3}
@@ -495,9 +496,10 @@ input,button,select,textarea{font-family:inherit}
   </div>
 </div>
 
+<button class="dash-menu-btn" onclick="toggleTabMenu('df-tabs')" title="Menu"><i data-lucide="menu" class="lx"></i></button>
 <div class="dash" id="p-dash-female">
   <header class="dash-hdr">
-    <div class="dash-logo"><svg width="28" height="28" viewBox="0 0 64 64" style="flex-shrink:0;vertical-align:middle;margin-right:4px"><defs><linearGradient id="dlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B9E8C"/><stop offset="1" stop-color="#15857A"/></linearGradient></defs><path d="M10 40 Q20 26 32 36 T54 28" fill="none" stroke="url(#dlg)" stroke-width="3.5" stroke-linecap="round"/><path d="M10 46 Q20 32 32 42 T54 34" fill="none" stroke="#00F0FF" stroke-width="2.5" stroke-linecap="round" opacity=".4"/><circle cx="32" cy="20" r="6" fill="url(#dlg)"/><circle cx="32" cy="20" r="3" fill="#fff"/></svg>Bio<span>Sync</span></div>
+    <div class="dash-logo" onclick="S._fTab='wave';renderFemaleDash()"><svg width="28" height="28" viewBox="0 0 64 64" style="flex-shrink:0;vertical-align:middle;margin-right:4px"><defs><linearGradient id="dlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B9E8C"/><stop offset="1" stop-color="#15857A"/></linearGradient></defs><path d="M10 40 Q20 26 32 36 T54 28" fill="none" stroke="url(#dlg)" stroke-width="3.5" stroke-linecap="round"/><path d="M10 46 Q20 32 32 42 T54 34" fill="none" stroke="#00F0FF" stroke-width="2.5" stroke-linecap="round" opacity=".4"/><circle cx="32" cy="20" r="6" fill="url(#dlg)"/><circle cx="32" cy="20" r="3" fill="#fff"/></svg>Bio<span>Sync</span></div>
     <div class="dash-r"><span class="dash-user" id="df-user"></span>
       <button class="btn btn-sm" id="df-voice-btn" onclick="openVoiceModal()" style="background:linear-gradient(135deg,var(--rose),var(--roseD));color:#fff;font-size:.85rem;padding:6px 14px;gap:6px;display:none" title="Выговориться"><i data-lucide="mic" class="lx lx-sm"></i></button>
       <button class="btn btn-g btn-sm" onclick="logout()">Выйти</button>
@@ -517,9 +519,10 @@ input,button,select,textarea{font-family:inherit}
   </div>
 </div>
 
+<button class="dash-menu-btn" onclick="toggleTabMenu('dm-tabs')" title="Menu"><i data-lucide="menu" class="lx"></i></button>
 <div class="dash" id="p-dash-male">
   <header class="dash-hdr">
-    <div class="dash-logo"><svg width="28" height="28" viewBox="0 0 64 64" style="flex-shrink:0;vertical-align:middle;margin-right:4px"><defs><linearGradient id="dlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B9E8C"/><stop offset="1" stop-color="#15857A"/></linearGradient></defs><path d="M10 40 Q20 26 32 36 T54 28" fill="none" stroke="url(#dlg)" stroke-width="3.5" stroke-linecap="round"/><path d="M10 46 Q20 32 32 42 T54 34" fill="none" stroke="#00F0FF" stroke-width="2.5" stroke-linecap="round" opacity=".4"/><circle cx="32" cy="20" r="6" fill="url(#dlg)"/><circle cx="32" cy="20" r="3" fill="#fff"/></svg>Bio<span>Sync</span></div>
+    <div class="dash-logo" onclick="S._mTab='compass';renderMaleDash()"><svg width="28" height="28" viewBox="0 0 64 64" style="flex-shrink:0;vertical-align:middle;margin-right:4px"><defs><linearGradient id="dlg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B9E8C"/><stop offset="1" stop-color="#15857A"/></linearGradient></defs><path d="M10 40 Q20 26 32 36 T54 28" fill="none" stroke="url(#dlg)" stroke-width="3.5" stroke-linecap="round"/><path d="M10 46 Q20 32 32 42 T54 34" fill="none" stroke="#00F0FF" stroke-width="2.5" stroke-linecap="round" opacity=".4"/><circle cx="32" cy="20" r="6" fill="url(#dlg)"/><circle cx="32" cy="20" r="3" fill="#fff"/></svg>Bio<span>Sync</span></div>
     <div class="dash-r"><span class="dash-user" id="dm-user"></span><button class="btn btn-g btn-sm" onclick="logout()">Выйти</button></div>
   </header>
   <div class="dash-c">
@@ -1002,6 +1005,15 @@ function navigate(page){
   if(page==='login'){setTimeout(checkRemembered,100)}
   if(page==='dash-female'&&S.curUser)renderFemaleDash();
   if(page==='dash-male'&&S.curUser)renderMaleDash();
+}
+function toggleTabMenu(id){
+  let el=document.getElementById(id);
+  if(!el)return;
+  el.style.display=el.style.display==='none'?'flex':'';
+  if(el.style.display==='flex'){
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+    el.focus();
+  }
 }
 function show(id){document.getElementById(id).style.display=''}
 function hide(id){document.getElementById(id).style.display='none'}
@@ -1549,15 +1561,31 @@ function fCouple(){
     </div>`;
   }
   if(cp&&cp.code){
+    let fu=S.users.find(x=>x.id===S.curUser);
+    let inviteLink=buildConnectLink();
+    let qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=180x180&data='+encodeURIComponent(inviteLink);
+    let shareText='Привет! Я приглашаю тебя в BioSync — приложение для пар. Переходи по ссылке и регистрируйся: '+inviteLink;
     return `<div class="cs"><div style="font-size:3rem;margin-bottom:8px">🔗</div>
       <h3>Код пары создан</h3>
-      <p>Отправьте этот код партнеру:</p>
+      <p>Отправьте партнеру код или ссылку-приглашение:</p>
       <div class="code">${cp.code}</div>
       <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-        <button class="btn btn-s btn-sm" onclick="navigator.clipboard.writeText('${cp.code}');this.textContent='✅ Скопировано'" style="flex:1">📋 Копировать код</button>
-        <button class="btn btn-p btn-sm" onclick="navigator.clipboard.writeText(buildConnectLink());alert('🔗 Ссылка скопирована! Отправьте её партнеру.')" style="flex:1">🔗 Ссылка</button>
+        <button class="btn btn-s btn-sm" onclick="navigator.clipboard.writeText('${cp.code}');this.textContent='✅ Скопировано'" style="flex:1;min-width:120px">📋 Копировать код</button>
+        <button class="btn btn-p btn-sm" onclick="navigator.clipboard.writeText('${inviteLink}');this.textContent='✅ Скопировано'" style="flex:1;min-width:120px">🔗 Ссылка</button>
       </div>
-      <p style="font-size:.85rem;color:var(--text3)">После подключения придет запрос на подтверждение.</p></div>`;
+      <div style="background:var(--bg);border-radius:16px;padding:16px;margin-top:14px;text-align:center;border:1px solid var(--border)">
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:10px">📱 QR-код для партнера</div>
+        <img src="${qrUrl}" alt="QR" style="width:140px;height:140px;border-radius:12px;border:1px solid var(--border)" loading="lazy">
+        <p style="font-size:.75rem;color:var(--text3);margin-top:8px">Партнер может отсканировать QR-код камерой телефона</p>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-p btn-sm" onclick="shareInviteLink()" style="flex:1;min-width:120px">📤 Поделиться</button>
+        <button class="btn btn-g btn-sm" onclick="navigator.clipboard.writeText('${shareText}');alert('✅ Текст приглашения скопирован!')" style="flex:1;min-width:120px">💬 Текст приглашения</button>
+      </div>
+      <div style="background:rgba(27,158,140,.06);border-radius:14px;padding:12px;margin-top:12px;border:1px solid rgba(27,158,140,.1)">
+        <p style="font-size:.78rem;color:var(--text2);line-height:1.5">💡 <strong>Как это работает:</strong> Партнер переходит по ссылке → регистрируется как мужчина → код пары подставляется автоматически → вы получаете запрос на подтверждение.</p>
+      </div>
+      <p style="font-size:.85rem;color:var(--text3);margin-top:10px">После подключения придет запрос на подтверждение.</p></div>`;
   }
   return `<div class="cs"><div style="font-size:3rem;margin-bottom:8px">🔗</div>
     <h3>Подключение партнера</h3>
@@ -2129,6 +2157,14 @@ const _T={
 'sonya_report':{ru:'Отчёт пары',en:'Couple report',zh:'情侣报告',hi:'कपल रिपोर्ट',es:'Reporte de pareja',ar:'تقرير الزوجين',fr:'Rapport de couple',bn:'কাপল রিপোর্ট',pt:'Relatório do casal',ur:'جوڑے کی رپورٹ',de:'Paarbericht',id:'Laporan pasangan',ja:'カップルレポート',tr:'Çift raporu',ko:'커플 보고서'},
 'sonya_sos_mode':{ru:'SOS-успокоение',en:'SOS calming',zh:'SOS平静',hi:'एसओएस शांति',es:'SOS calmante',ar:'SOS مهدئ',fr:'SOS apaisement',bn:'SOS শান্তি',pt:'SOS acalmar',ur:'SOS تسکین',de:'SOS Beruhigung',id:'SOS menenangkan',ja:'SOS鎮静',tr:'SOS sakinleştirme',ko:'SOS 진정'},
 'sonya_challenge':{ru:'Челлендж',en:'Challenge',zh:'挑战',hi:'चुनौती',es:'Desafío',ar:'تحدي',fr:'Défi',bn:'চ্যালেঞ্জ',pt:'Desafio',ur:'چیلنج',de:'Challenge',id:'Tantangan',ja:'チャレンジ',tr:'Meydan okuma',ko:'챌린지'},
+'sonya_chat':{ru:'Поговорить с Соней',en:'Talk to Sonya',zh:'与索尼娅交谈',hi:'सोन्या से बात करें',es:'Hablar con Sonya',ar:'تحدث مع سونيا',fr:'Parler à Sonya',bn:'সোনিয়ার সাথে কথা বলুন',pt:'Falar com a Sonya',ur:'سونیا سے بات کریں',de:'Mit Sonja sprechen',id:'Bicara dengan Sonya',ja:'ソーニャと話す',tr:'Sonya ile konuş',ko:'소냐와 대화하기'},
+'sonya_chat_desc':{ru:'Спроси о чём угодно — я здесь',en:'Ask anything — I am here',zh:'问任何问题——我在这里',hi:'कुछ भी पूछें — मैं यहाँ हूं',es:'Pregunta lo que quieras — estoy aquí',ar:'اسأل أي شيء — أنا هنا',fr:'Posez votre question — je suis là',bn:'যা খুশি জিজ্ঞাসা করুন — আমি এখানে',pt:'Pergunte qualquer coisa — estou aqui',ur:'کچھ بھی پوچھیں — میں یہاں ہوں',de:'Frag alles — ich bin hier',id:'Tanya apa saja — saya di sini',ja:'何でも聞いて — ここにいるよ',tr:'Her şeyi sor — buradayım',ko:'무엇이든 물어보세요 — 여기 있어요'},
+'sonya_chat_placeholder':{ru:'Напишите сообщение…',en:'Type a message…',zh:'输入消息…',hi:'संदेश लिखें…',es:'Escribe un mensaje…',ar:'اكتب رسالة…',fr:'Tapez un message…',bn:'মেসেজ লিখুন…',pt:'Digite uma mensagem…',ur:'پیغام لکھیں…',de:'Nachricht eingeben…',id:'Ketik pesan…',ja:'メッセージを入力…',tr:'Mesaj yaz…',ko:'메시지 입력…'},
+'sonya_send':{ru:'Отправить',en:'Send',zh:'发送',hi:'भेजें',es:'Enviar',ar:'إرسال',fr:'Envoyer',bn:'পাঠান',pt:'Enviar',ur:'بھیجیں',de:'Senden',id:'Kirim',ja:'送信',tr:'Gönder',ko:'전송'},
+'sonya_typing':{ru:'Соня печатает…',en:'Sonya is typing…',zh:'索尼娅正在输入…',hi:'सोन्या टाइप कर रही हैं…',es:'Sonya está escribiendo…',ar:'سونيا تكتب…',fr:'Sonya tape…',bn:'সোনিয়া টাইপ করছে…',pt:'Sonya está digitando…',ur:'سونیا ٹائپ کر رہی ہے…',de:'Sonja tippt…',id:'Sonya sedang mengetik…',ja:'ソーニャが入力中…',tr:'Sonya yazıyor…',ko:'소냐가 입력 중…'},
+'sonya_error':{ru:'Извините, не удалось получить ответ. Попробуйте ещё раз.',en:'Sorry, could not get a response. Please try again.',zh:'抱歉，无法获取回复。请重试。',hi:'क्षमा करें, उत्तर नहीं मिला। कृपया पुनः प्रयास करें।',es:'Lo siento, no se pudo obtener respuesta. Inténtalo de nuevo.',ar:'عذراً، تعذر الحصول على رد. حاول مرة أخرى.',fr:'Désolé, impossible de obtenir une réponse. Veuillez réessayer.',bn:'দুঃখিত, উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।',pt:'Desculpe, não foi possível obter resposta. Tente novamente.',ur:'معذرت، جواب نہیں مل سکا۔ دوبارہ کوشش کریں۔',de:'Sorry, keine Antwort erhalten. Bitte erneut versuchen.',id:'Maaf, tidak bisa mendapatkan jawaban. Coba lagi.',ja:'申し訳ありません、回答を取得できませんでした。もう一度お試しください。',tr:'Üzgünüm, cevap alınamadı. Lütfen tekrar deneyin.',ko:'죄송합니다, 응답을 받을 수 없습니다. 다시 시도해주세요.'},
+'sonya_clear':{ru:'Очистить диалог',en:'Clear chat',zh:'清除对话',hi:'चैट साफ़ करें',es:'Borrar chat',ar:'مسح المحادثة',fr:'Effacer la conversation',bn:'চ্যাট মুছুন',pt:'Limpar chat',ur:'چیٹ صاف کریں',de:'Chat löschen',id:'Hapus chat',ja:'チャットを消去',tr:'Sohbeti temizle',ko:'채팅 지우기'},
+'sonya_ai_badge':{ru:'ИИ-чат',en:'AI chat',zh:'AI聊天',hi:'एआई चैट',es:'Chat IA',ar:'محادثة ذكية',fr:'Chat IA',bn:'এআই চ্যাট',pt:'Chat IA',ur:'اے آئی چیٹ',de:'KI-Chat',id:'Chat AI',ja:'AIチャット',tr:'AI sohbet',ko:'AI 채팅'},
 'm_sonya_inactive':{ru:'Соня пока не активна',en:'Sonya not active yet',zh:'索尼娅尚未激活',hi:'सोन्या अभी सक्रिय नहीं',es:'Sonya aún no está activa',ar:'سونيا غير نشطة بعد',fr:'Sonya n\'est pas encore active',bn:'সোনিয়া এখনও সক্রিয় নয়',pt:'Sonya ainda não está ativa',ur:'سونیا ابھی فعال نہیں',de:'Sonya noch nicht aktiv',id:'Sonya belum aktif',ja:'ソーニャはまだアクティブではありません',tr:'Sonya henüz aktif değil',ko:'소냐가 아직 활성화되지 않았습니다'},
 'm_sonya_tooltip':{ru:'Соня · переводчик пары',en:'Sonya · couple translator',zh:'索尼娅 · 情侣翻译',hi:'सोन्या · कपल अनुवादक',es:'Sonya · traductora de pareja',ar:'سونيا · مترجمة الزوجين',fr:'Sonya · traductrice de couple',bn:'সোনিয়া · কাপল অনুবাদক',pt:'Sonya · tradutora do casal',ur:'سونیا · جوڑے کا مترجم',de:'Sonya · Paar-Übersetzerin',id:'Sonya · penerjemah pasangan',ja:'ソーニャ · カップル翻訳',tr:'Sonya · çift çevirmeni',ko:'소냐 · 커플 번역기'},
 'm_sonya_prem':{ru:'Premium-доступ',en:'Premium access',zh:'Premium访问',hi:'प्रीमियम पहुंच',es:'Acceso Premium',ar:'وصول Premium',fr:'Accès Premium',bn:'Premium অ্যাক্সেস',pt:'Acesso Premium',ur:'پریمیم رسائی',de:'Premium-Zugang',id:'Akses Premium',ja:'Premiumアクセス',tr:'Premium erişim',ko:'Premium 액세스'},
@@ -2642,6 +2678,112 @@ function sonyaMediation(topic){
   return {ctx,herTip:t.her,himTip:t.him};
 }
 
+// ====== SONYA AI ENGINE (Pollinations.AI — free, no key, CORS) ======
+const POLLI_URL='https://text.pollinations.ai/openai';
+function buildSonyaContext(){
+  let u=S.users.find(x=>x.id===S.curUser);
+  if(!u)return '';
+  let ph=getPhase(S.curUser);
+  let cp=S.couples.find(x=>x.fId===S.curUser||x.mId===S.curUser);
+  let partner=null,pcpStatus='не подключён';
+  if(cp){
+    let pid=cp.fId===S.curUser?cp.mId:cp.fId;
+    partner=S.users.find(x=>x.id===pid);
+    pcpStatus=cp.status==='active'?'активна':cp.status==='pending_approval'?'ожидает подтверждения':'в процессе';
+  }
+  let moods=(S.logs[S.curUser]||[]).slice(-5);
+  let sessions=(S.voice[S.curUser]||[]).length;
+  let langName=LANG_NAMES[_lang]||'English';
+  let moodList=moods.length?moods.map(function(m){return m.mood+' (energy:'+m.energy+'/10,pain:'+m.pain+'/10)'}).join('; '):'нет записей';
+  let phaseInfo=ph?(_pn(ph.phaseId)+' (день '+ph.day+' из '+ph.cl+', до следующего '+ph.dnu+' дн.)'):'не настроен';
+  let phaseDesc=ph?_pd(ph.phaseId):'';
+  let challenge=S._activeChallenge?S._activeChallenge.t:'нет активного челленджа';
+  let sub=getSub(S.curUser);
+  let subStatus=sub.plan==='premium'||sub.plan==='unlimited'?'Premium':sub.trial?'пробный период':'бесплатный';
+  let ctx='Ты — Соня (от София — мудрость), тёплый эмпатичный ИИ-медиатор и психолог в приложении BioSync для пар. ';
+  ctx+='Приложение помогает парам понимать цикл женщины и общаться бережно через «Код пары». ';
+  ctx+='Ты НЕ лицензированный терапевт — скажи об этом, если спросят про диагноз или лекарства. ';
+  ctx+='При упоминании самоповреждения направляй к кризисной линии. ';
+  ctx+='ВАЖНО: Отвечай ТОЛЬКО на языке: '+langName+'. ';
+  ctx+='Контекст о пользователе:\n';
+  ctx+='- Имя: '+u.name+'\n';
+  ctx+='- Пол: '+(u.gender==='female'?'женщина':'мужчина')+'\n';
+  ctx+='- Фаза цикла: '+phaseInfo+(phaseDesc?'\n- Описание фазы: '+phaseDesc:'')+'\n';
+  ctx+='- Последние настроения: '+moodList+'\n';
+  ctx+='- Сессий «Выговориться»: '+sessions+'\n';
+  ctx+='- Партнёр: '+(partner?partner.name+' (статус: '+pcpStatus+')':'не подключён')+'\n';
+  ctx+='- Челлендж: '+challenge+'\n';
+  ctx+='- Подписка: '+subStatus+'\n';
+  ctx+='Инструменты приложения, которые ты можешь рекомендовать:\n';
+  ctx+='- Дневник настроения (отмечать настроение, энергию, боль)\n';
+  ctx+='- Выговориться (голосовая сессия с анализом стресса)\n';
+  ctx+='- Парные ритуалы (благодарность, слушание, сюрприз, объятия)\n';
+  ctx+='- Челленджи (7-30 дней)\n';
+  ctx+='- Соня-Переводчик (для мужчины: переводит фазы на язык заботы)\n';
+  ctx+='Правила:\n';
+  ctx+='- Тёплый, краткий (2-4 предложения), без осуждения\n';
+  ctx+='- Ссылайся на фазу цикла, когда уместно\n';
+  ctx+='- Предлагай конкретные действия из инструментов приложения\n';
+  ctx+='- Не давай медицинских советов — рекомендуй обратиться к врачу\n';
+  ctx+='- Используй имя пользователя\n';
+  ctx+='- Для мужчины: помогай понимать партнёршу через фазу цикла\n';
+  ctx+='- Для женщины: поддерживай, валидируй чувства, предлагай практики заботы';
+  return ctx;
+}
+async function sonyaAI(userMessage,history){
+  let systemPrompt=buildSonyaContext();
+  if(!systemPrompt)return null;
+  let messages=[{role:'system',content:systemPrompt}];
+  if(history&&history.length){
+    for(let i=0;i<history.length;i++){
+      let h=history[i];
+      messages.push({role:h.role==='assistant'?'assistant':'user',content:h.text});
+    }
+  }
+  messages.push({role:'user',content:userMessage});
+  try{
+    let resp=await fetch(POLLI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:messages,temperature:0.85})});
+    if(!resp.ok)return null;
+    let data=await resp.json();
+    let text=data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
+    return text||null;
+  }catch(e){console.error('Sonya AI error:',e);return null}
+}
+function sonyaAISend(msg){
+  if(!S._sonyaChat)S._sonyaChat=[];
+  S._sonyaChat.push({role:'user',text:msg});
+  S._sonyaAILoading=true;
+  delete S._sonyaAILast;
+  renderFemaleDash();
+  sonyaAI(msg,S._sonyaChat.slice(0,-1)).then(function(reply){
+    S._sonyaAILoading=false;
+    if(reply){
+      S._sonyaChat.push({role:'assistant',text:reply});
+      S._sonyaChat=S._sonyaChat.slice(-20);
+    }else{
+      S._sonyaAILast=_('sonya_error');
+    }
+    save();renderFemaleDash();
+  });
+}
+function sonyaAISendMale(msg){
+  if(!S._sonyaChatM)S._sonyaChatM=[];
+  S._sonyaChatM.push({role:'user',text:msg});
+  S._sonyaAILoadingM=true;
+  delete S._sonyaAILastM;
+  renderMaleDash();
+  sonyaAI(msg,S._sonyaChatM.slice(0,-1)).then(function(reply){
+    S._sonyaAILoadingM=false;
+    if(reply){
+      S._sonyaChatM.push({role:'assistant',text:reply});
+      S._sonyaChatM=S._sonyaChatM.slice(-20);
+    }else{
+      S._sonyaAILastM=_('sonya_error');
+    }
+    save();renderMaleDash();
+  });
+}
+
 // random help
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 const SOOTHE=[
@@ -2731,6 +2873,12 @@ function fSonya(){
         <div style="font-weight:600;font-size:.82rem">${_('sonya_challenge')}</div>
         <div style="font-size:.7rem;color:var(--text3)">Задание на неделю</div>
         ${!isPremium?'<div style="font-size:.6rem;color:var(--roseD);margin-top:2px">Premium</div>':''}
+      </div>
+      <div class="rc" style="padding:16px;text-align:center;cursor:pointer;background:linear-gradient(135deg,rgba(0,240,255,.08),rgba(27,158,140,.04));border:1px solid rgba(0,240,255,.2)" onclick="S._sonyaMode='chat';renderFemaleDash()">
+        <span style="font-size:1.6rem;display:block;margin-bottom:4px">🧠</span>
+        <div style="font-weight:600;font-size:.82rem">${_('sonya_chat')}</div>
+        <div style="font-size:.7rem;color:var(--text3)">${_('sonya_chat_desc')}</div>
+        <div style="font-size:.6rem;color:var(--rose);margin-top:2px;font-weight:600">${_('sonya_ai_badge')}</div>
       </div>
     </div>
 
@@ -2862,6 +3010,7 @@ function fSonya(){
         <p style="font-size:.85rem;color:var(--text2);line-height:1.6">${s.desc}</p>
         <button class="btn btn-p btn-sm mt-2" onclick="alert('🧘 Практика запущена. Дышите спокойно.')">▶ Начать</button>
         <button class="btn btn-g btn-sm mt-2" onclick="renderFemaleDash()" style="margin-left:8px">🔄 Другую</button>
+        <button class="btn btn-s btn-sm mt-2" onclick="S._sonyaMode='soothe-ball';renderFemaleDash()" style="margin-left:8px">u{1F631} u{414}u{44B}u{445}u{430}u{43D}u{438}u{435}</button>
       </div>
       <p style="font-size:.75rem;color:var(--text3);text-align:center">${ph?`🌊 ${WAVE_NAMES[ph.phaseId]} фаза — ${['отдыхай','действуй','общайся','замедляйся'][ph.phaseId]}.`:''}</p>
     </div>`;
@@ -2928,7 +3077,128 @@ function fSonya(){
       <p style="color:var(--text2);font-size:.9rem">Я буду напоминать каждый вечер.<br>В конце периода подведём итоги.</p>
     </div>`;
   }
+  if(mode==='chat'){return fSonyaChat()}
+  if(mode==='soothe-ball'){return fSonyaBreathBall(ph)}
   return '';
+
+
+function fSonyaChat(){
+  let chat=S._sonyaChat||[];
+  let loading=S._sonyaAILoading;
+  let errMsg=S._sonyaAILast;
+  let chatHtml='';
+  for(let i=0;i<chat.length;i++){
+    let m=chat[i];
+    let isU=m.role==='user';
+    let safeText=m.text.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+    chatHtml+='<div style="display:flex;justify-content:'+(isU?'flex-end':'flex-start')+';margin-bottom:10px">';
+    chatHtml+='<div style="max-width:80%;padding:10px 14px;border-radius:16px 16px '+(isU?'4px 16px':'16px 4px')+';background:'+(isU?'var(--rose)':'var(--card)')+';color:'+(isU?'#fff':'var(--text)')+';font-size:.85rem;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,.06)">'+safeText+'</div></div>';
+  }
+  if(errMsg&&!loading)chatHtml+='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.8rem">'+errMsg+'</div>';
+  let html='<div style="max-width:600px;margin:0 auto;text-align:left">';
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
+  html+='<button class="btn btn-g btn-sm" onclick="delete S._sonyaMode;renderFemaleDash()" style="padding:6px 10px">\u2190</button>';
+  html+='<span style="font-weight:700;font-size:1rem">\uD83E\uDDE0 '+_('sonya_chat')+'</span>';
+  html+='<span style="font-size:.6rem;color:var(--rose);font-weight:600;background:rgba(0,240,255,.08);padding:2px 8px;border-radius:8px;border:1px solid rgba(0,240,255,.15)">'+_('sonya_ai_badge')+'</span>';
+  if(chat.length)html+='<button class="btn btn-g btn-sm" onclick="delete S._sonyaChat;renderFemaleDash()" style="margin-left:auto;padding:6px 10px;font-size:.72rem">'+_('sonya_clear')+'</button>';
+  html+='</div>';
+  html+='<div id="sonya-chat-box" style="background:var(--bg);border-radius:20px;padding:16px;min-height:200px;max-height:400px;overflow-y:auto;margin-bottom:12px;border:1px solid var(--border)">';
+  if(chatHtml){
+    html+=chatHtml;
+  }else{
+    html+='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:.85rem">'+_('sonya_chat_desc')+'</div>';
+  }
+  if(loading){
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;color:var(--text3);font-size:.8rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--rose);animation:voicePulse 1s infinite"></span><span>'+_('sonya_typing')+'</span></div>';
+  }
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px">';
+  html+='<input type="text" id="sonya-chat-input" placeholder="'+_('sonya_chat_placeholder')+'" style="flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:16px;font-size:.9rem;background:var(--card);color:var(--text);outline:none" onkeydown="if(event.key==='+String.fromCharCode(39)+'Enter'+String.fromCharCode(39)+'){sonyaAISend(this.value);this.value='+String.fromCharCode(39)+String.fromCharCode(39)+'}">';
+  html+='<button class="btn btn-p" onclick="var i=document.getElementById('+String.fromCharCode(39)+'sonya-chat-input'+String.fromCharCode(39)+');sonyaAISend(i.value);i.value='+String.fromCharCode(39)+String.fromCharCode(39)+'">'+_('sonya_send')+'</button>';
+  html+='</div></div>';
+  setTimeout(function(){var box=document.getElementById('sonya-chat-box');if(box)box.scrollTop=box.scrollHeight},50);
+  return html;
+}
+
+function fSonyaBreathBall(ph){
+  let html='<div style="max-width:600px;margin:0 auto;text-align:left">';
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
+  html+='<button class="btn btn-g btn-sm" onclick="delete S._sonyaMode;renderFemaleDash()" style="padding:6px 10px">\u2190</button>';
+  html+='<span style="font-weight:700;font-size:1rem">\uD83C\uDFAF \u0414\u044B\u0445\u0430\u043D\u0438\u0435</span>';
+  html+='</div>';
+  html+='<div style="background:var(--bg);border-radius:20px;padding:24px;text-align:center;margin-bottom:12px">';
+  html+='<div style="position:relative;width:200px;height:200px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center">';
+  html+='<div id="breath-ball" style="width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#1B9E8C,#15857A);box-shadow:0 0 30px rgba(0,240,255,.4),0 0 60px rgba(27,158,140,.3);transition:all 4s ease-in-out;display:flex;align-items:center;justify-content:center">';
+  html+='<span id="breath-text" style="color:#fff;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em">\u0412\u0434\u043E\u0445</span>';
+  html+='</div></div>';
+  html+='<div id="breath-counter" style="font-size:1.5rem;font-weight:800;color:var(--roseD);margin-bottom:8px;font-variant-numeric:tabular-nums">4</div>';
+  html+='<div id="breath-label" style="font-size:.85rem;color:var(--text2);margin-bottom:16px">\u0412\u0434\u043E\u0445\u043D\u0438\u0442\u0435 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u043E</div>';
+  html+='<div style="display:flex;gap:8px;justify-content:center">';
+  html+='<button class="btn btn-p btn-sm" id="breath-start-btn" onclick="startBreathing()">\u25B6 \u041D\u0430\u0447\u0430\u0442\u044C</button>';
+  html+='<button class="btn btn-g btn-sm" onclick="stopBreathing()">\u23F9 \u0421\u0442\u043E\u043F</button>';
+  html+='</div>';
+  html+='<div style="margin-top:16px;font-size:.75rem;color:var(--text3)">\u0426\u0438\u043A\u043B: \u0432\u0434\u043E\u0445 4\u0441 \u2014 \u0437\u0430\u0434\u0435\u0440\u0436\u043A\u0430 4\u0441 \u2014 \u0432\u044B\u0434\u043E\u0445 4\u0441 \u2014 \u0437\u0430\u0434\u0435\u0440\u0436\u043A\u0430 4\u0441</div>';
+  html+='</div>';
+  if(ph){
+    let phaseHints=['\u043E\u0442\u0434\u044B\u0445\u0430\u0439','\u0434\u0435\u0439\u0441\u0442\u0432\u0443\u0439','\u043E\u0431\u0449\u0430\u0439\u0441\u044F','\u0437\u0430\u043C\u0435\u0434\u043B\u044F\u0439\u0441\u044F'];
+    html+='<p style="font-size:.75rem;color:var(--text3);text-align:center">\uD83C\uDF0A '+WAVE_NAMES[ph.phaseId]+' \u0444\u0430\u0437\u0430 \u2014 '+phaseHints[ph.phaseId]+'.</p>';
+  }
+  html+='</div>';
+  return html;
+}
+
+let _breathTimer=null,_breathPhase=0,_breathCount=4;
+function startBreathing(){
+  stopBreathing();
+  _breathPhase=0;_breathCount=4;
+  _doBreathStep();
+}
+function stopBreathing(){
+  if(_breathTimer){clearInterval(_breathTimer);_breathTimer=null}
+  let b=document.getElementById('breath-ball');
+  if(b){b.style.width='60px';b.style.height='60px';b.style.background='radial-gradient(circle,#1B9E8C,#15857A)'}
+}
+function _doBreathStep(){
+  let b=document.getElementById('breath-ball');
+  let t=document.getElementById('breath-text');
+  let c=document.getElementById('breath-counter');
+  let l=document.getElementById('breath-label');
+  if(!b)return;
+  var Q=String.fromCharCode(39);
+  if(_breathPhase===0){
+    b.style.width='160px';b.style.height='160px';
+    b.style.background='radial-gradient(circle,#00F0FF,#1B9E8C)';
+    if(t)t.textContent='\u0412\u0414\u041E\u0425';
+    if(l)l.textContent='\u0412\u0434\u043E\u0445\u043D\u0438\u0442\u0435 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u043E';
+  }else if(_breathPhase===1){
+    b.style.width='160px';b.style.height='160px';
+    b.style.background='radial-gradient(circle,#7DD3FC,#0EA5E9)';
+    if(t)t.textContent='\u0417\u0410\u0414\u0415\u0420\u0416\u041A\u0410';
+    if(l)l.textContent='\u0417\u0430\u0434\u0435\u0440\u0436\u0438\u0442\u0435 \u0434\u044B\u0445\u0430\u043D\u0438\u0435';
+  }else if(_breathPhase===2){
+    b.style.width='60px';b.style.height='60px';
+    b.style.background='radial-gradient(circle,#E0A8A8,#C08888)';
+    if(t)t.textContent='\u0412\u042B\u0414\u041E\u0425';
+    if(l)l.textContent='\u0412\u044B\u0434\u043E\u0445\u043D\u0438\u0442\u0435 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u043E';
+  }else if(_breathPhase===3){
+    b.style.width='60px';b.style.height='60px';
+    b.style.background='radial-gradient(circle,#A8C4A8,#88A888)';
+    if(t)t.textContent='\u0417\u0410\u0414\u0415\u0420\u0416\u041A\u0410';
+    if(l)l.textContent='\u041E\u0442\u0434\u044B\u0445';
+  }
+  _breathCount=4;
+  if(c)c.textContent=_breathCount;
+  _breathTimer=setInterval(function(){
+    _breathCount--;
+    if(c)c.textContent=_breathCount;
+    if(_breathCount<=0){
+      clearInterval(_breathTimer);
+      _breathPhase=(_breathPhase+1)%4;
+      _doBreathStep();
+    }
+  },1000);
+}
+
 }
 
 function startChallenge(title){
@@ -3000,6 +3270,12 @@ function mSonya(){
         <div style="font-weight:600;font-size:.82rem">${_('m_sonya_tip')}</div>
         <div style="font-size:.7rem;color:var(--text3)">${_('m_sonya_personal')}</div>
       </div>
+      <div class="rc" style="padding:16px;text-align:center;cursor:pointer;background:linear-gradient(135deg,rgba(0,240,255,.08),rgba(27,158,140,.04));border:1px solid rgba(0,240,255,.2)" onclick="S._sonyaMode='chat';renderMaleDash()">
+        <span style="font-size:1.6rem;display:block;margin-bottom:4px">🧠</span>
+        <div style="font-weight:600;font-size:.82rem">${_('sonya_chat')}</div>
+        <div style="font-size:.7rem;color:var(--text3)">${_('sonya_chat_desc')}</div>
+        <div style="font-size:.6rem;color:var(--rose);margin-top:2px;font-weight:600">${_('sonya_ai_badge')}</div>
+      </div>
     </div>
 
     ${ph?`
@@ -3060,7 +3336,48 @@ function mSonya(){
       <button class="btn btn-s btn-block btn-sm" onclick="delete S._sonyaMode;renderMaleDash()">${_('m_back_sonya')}</button>
     </div>`;
   }
+  if(mode==='chat'){return mSonyaChat()}
   return '';
+}
+
+
+function mSonyaChat(){
+  let chat=S._sonyaChatM||[];
+  let loading=S._sonyaAILoadingM;
+  let errMsg=S._sonyaAILastM;
+  let chatHtml='';
+  for(let i=0;i<chat.length;i++){
+    let m=chat[i];
+    let isU=m.role==='user';
+    let safeText=m.text.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+    chatHtml+='<div style="display:flex;justify-content:'+(isU?'flex-end':'flex-start')+';margin-bottom:10px">';
+    chatHtml+='<div style="max-width:80%;padding:10px 14px;border-radius:16px 16px '+(isU?'4px 16px':'16px 4px')+';background:'+(isU?'var(--rose)':'var(--card)')+';color:'+(isU?'#fff':'var(--text)')+';font-size:.85rem;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,.06)">'+safeText+'</div></div>';
+  }
+  if(errMsg&&!loading)chatHtml+='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.8rem">'+errMsg+'</div>';
+  let Q=String.fromCharCode(39);
+  let html='<div style="max-width:600px;margin:0 auto;text-align:left">';
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
+  html+='<button class="btn btn-g btn-sm" onclick="delete S._sonyaMode;renderMaleDash()" style="padding:6px 10px">\u2190</button>';
+  html+='<span style="font-weight:700;font-size:1rem">\uD83E\uDDE0 '+_('sonya_chat')+'</span>';
+  html+='<span style="font-size:.6rem;color:var(--rose);font-weight:600;background:rgba(0,240,255,.08);padding:2px 8px;border-radius:8px;border:1px solid rgba(0,240,255,.15)">'+_('sonya_ai_badge')+'</span>';
+  if(chat.length)html+='<button class="btn btn-g btn-sm" onclick="delete S._sonyaChatM;renderMaleDash()" style="margin-left:auto;padding:6px 10px;font-size:.72rem">'+_('sonya_clear')+'</button>';
+  html+='</div>';
+  html+='<div id="sonya-chat-box" style="background:var(--bg);border-radius:20px;padding:16px;min-height:200px;max-height:400px;overflow-y:auto;margin-bottom:12px;border:1px solid var(--border)">';
+  if(chatHtml){
+    html+=chatHtml;
+  }else{
+    html+='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:.85rem">'+_('sonya_chat_desc')+'</div>';
+  }
+  if(loading){
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;color:var(--text3);font-size:.8rem"><span style="width:8px;height:8px;border-radius:50%;background:var(--rose);animation:voicePulse 1s infinite"></span><span>'+_('sonya_typing')+'</span></div>';
+  }
+  html+='</div>';
+  html+='<div style="display:flex;gap:8px">';
+  html+='<input type="text" id="sonya-chat-input" placeholder="'+_('sonya_chat_placeholder')+'" style="flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:16px;font-size:.9rem;background:var(--card);color:var(--text);outline:none" onkeydown="if(event.key==='+Q+'Enter'+Q+'){sonyaAISendMale(this.value);this.value='+Q+Q+'}">';
+  html+='<button class="btn btn-p" onclick="var i=document.getElementById('+Q+'sonya-chat-input'+Q+');sonyaAISendMale(i.value);i.value='+Q+Q+'">'+_('sonya_send')+'</button>';
+  html+='</div></div>';
+  setTimeout(function(){var box=document.getElementById('sonya-chat-box');if(box)box.scrollTop=box.scrollHeight},50);
+  return html;
 }
 
 function genCoupleCode(){
@@ -3335,6 +3652,20 @@ function buildConnectLink(){
   let cp=S.couples.find(x=>x.fId===S.curUser);
   if(!cp||!cp.code)return '';
   return location.href.split('#')[0]+'#connect='+cp.code;
+}
+function shareInviteLink(){
+  let cp=S.couples.find(x=>x.fId===S.curUser);
+  if(!cp||!cp.code)return;
+  let fu=S.users.find(x=>x.id===S.curUser);
+  let link=buildConnectLink();
+  let title='BioSync — приглашение в пару';
+  let text=(fu?fu.name:'Я')+' приглашает вас в BioSync. Подключитесь как партнер!';
+  if(navigator.share){
+    navigator.share({title:title,text:text,url:link}).catch(function(){});
+  }else{
+    navigator.clipboard.writeText(text+' '+link);
+    alert('✅ Ссылка скопирована!');
+  }
 }
 
 // ====== INIT ======
