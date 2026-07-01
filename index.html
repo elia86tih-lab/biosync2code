@@ -1570,7 +1570,12 @@ function renderPhaseGarden(ph, uid){
 
 function fWave(){
   let ph=getPhase(S.curUser);
-  if(!ph) return `<div class="emp"><div class="emp-ic">📊</div><h3>${_('wave_setup')}</h3><p>${_('wave_setup_desc')}</p></div>`;
+  if(!ph){
+    let html='<div class="emp"><div class="emp-ic">📊</div><h3>'+_('wave_setup')+'</h3><p>'+_('wave_setup_desc')+'</p></div>';
+    // Sonya still shows even without cycle
+    try{let sm=S._sonyaMode;S._sonyaMode='home';html+=fSonya();S._sonyaMode=sm;html=html.replace(/S\._sonyaMode='([^']+)';renderFemaleDash/g,"S._fTab='sonya';S._sonyaMode='$1';renderFemaleDash");}catch(e){}
+    return html;
+  }
   let fs=getUserFlowerSet(S.curUser);
   let today=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
     <div style="background:linear-gradient(135deg,rgba(224,168,168,.08),rgba(143,191,168,.06));border-radius:20px;padding:18px 20px;border:1px solid rgba(224,168,168,.15)">
