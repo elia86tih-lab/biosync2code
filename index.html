@@ -156,15 +156,24 @@ input,button,select,textarea{font-family:inherit}
 .cycle-tip:hover::before{opacity:1;bottom:calc(100%)}
 
 /* ====== TAB MENU INLINE BUTTON ====== */
-.dash-menu-btn-inline{width:36px;height:36px;border-radius:12px;background:transparent;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:all .2s;flex-shrink:0}
-.dash-menu-btn-inline:hover{background:rgba(27,158,140,.08);border-color:rgba(27,158,140,.2);color:var(--roseD)}
+.dash-menu-btn-inline{width:38px;height:38px;border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(245,240,232,.6));color:var(--text3);border:1.5px solid transparent;
+  box-shadow:0 2px 6px rgba(44,40,37,.06),inset 0 1px 0 rgba(255,255,255,.9);transition:all .25s cubic-bezier(.25,.8,.25,1)}
+.dash-menu-btn-inline:hover{color:var(--roseD);background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(253,220,181,.35));border-color:rgba(224,168,168,.15);box-shadow:0 4px 12px rgba(44,40,37,.08),inset 0 1px 0 rgba(255,255,255,.95);transform:translateY(-1px)}
+.dash-menu-btn-inline:active{transform:translateY(0);box-shadow:0 1px 3px rgba(44,40,37,.06),inset 0 1px 2px rgba(0,0,0,.04)}
+.dash-menu-btn-inline svg path,.dash-menu-btn-inline svg circle,.dash-menu-btn-inline svg rect{fill:#F5E6D3;fill-opacity:.55}
+.dash-menu-btn-inline:hover svg path,.dash-menu-btn-inline:hover svg circle,.dash-menu-btn-inline:hover svg rect{fill:#FDE0C0;fill-opacity:.7}
 .tab-menu-overlay{position:fixed;inset:0;z-index:299;background:rgba(0,0,0,.3);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:70px 16px 0}
 .tab-menu-overlay.show{display:flex}
 .tab-menu-panel{background:var(--card);border-radius:20px;padding:16px;max-width:360px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.2);display:grid;grid-template-columns:1fr 1fr;gap:8px;animation:slideDown .2s ease}
 @keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
-.tab-menu-item{padding:12px;border-radius:14px;cursor:pointer;text-align:center;transition:all .2s;border:1.5px solid transparent;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(245,240,232,.4))}
-.tab-menu-item:hover{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(253,220,181,.3));border-color:rgba(27,158,140,.15)}
-.tab-menu-item.act{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(253,213,177,.5));border-color:rgba(27,158,140,.2);color:var(--roseD);font-weight:700}
+.tab-menu-item{padding:12px;border-radius:14px;cursor:pointer;text-align:center;transition:all .25s cubic-bezier(.25,.8,.25,1);border:1.5px solid transparent;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(245,240,232,.6));box-shadow:0 2px 6px rgba(44,40,37,.06),inset 0 1px 0 rgba(255,255,255,.9)}
+.tab-menu-item:hover{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(253,220,181,.35));border-color:rgba(224,168,168,.15);box-shadow:0 4px 12px rgba(44,40,37,.08),inset 0 1px 0 rgba(255,255,255,.95);transform:translateY(-1px)}
+.tab-menu-item:active{transform:translateY(0);box-shadow:0 1px 3px rgba(44,40,37,.06),inset 0 1px 2px rgba(0,0,0,.04)}
+.tab-menu-item.act{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(253,213,177,.5));border-color:rgba(27,158,140,.2);color:var(--roseD);font-weight:700;box-shadow:0 4px 14px rgba(27,158,140,.12),0 2px 4px rgba(44,40,37,.06),inset 0 1px 0 rgba(255,255,255,.9);transform:translateY(-2px)}
+.tab-menu-item svg path,.tab-menu-item svg circle,.tab-menu-item svg rect{fill:#F5E6D3;fill-opacity:.55}
+.tab-menu-item:hover svg path,.tab-menu-item:hover svg circle,.tab-menu-item:hover svg rect{fill:#FDE0C0;fill-opacity:.7}
+.tab-menu-item.act svg path,.tab-menu-item.act svg circle,.tab-menu-item.act svg rect{fill:#FDD5AE;fill-opacity:.8}
 
 /* ====== YANDEX ADS ====== */
 .ad-block{background:rgba(255,255,255,.5);border-radius:16px;padding:8px;margin:16px 0;text-align:center;border:1px solid var(--border);overflow:hidden;min-height:90px;display:flex;align-items:center;justify-content:center}
