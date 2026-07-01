@@ -200,7 +200,8 @@ div:hover>.avatar-overlay{opacity:1}
 /* ====== SVG WAVE ====== */
 .svg-wave{width:100%;height:auto;min-height:280px;max-height:600px;margin:4px 0 0;overflow:visible}
 .svg-wave-section{background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(245,240,232,.6));border-radius:20px;padding:18px;border:1.5px solid var(--border);box-shadow:0 2px 6px rgba(44,40,37,.06),inset 0 1px 0 rgba(255,255,255,.9);margin-bottom:14px}
-.svg-wave-title{font-weight:700;font-size:.85rem;color:var(--roseD);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.svg-wave-title{font-weight:800;font-size:1.05rem;color:var(--roseD);margin-bottom:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.svg-wave-subtitle{font-size:.75rem;color:var(--text3);margin-bottom:8px}
 .wave-dot{animation:wavePulse 2s ease-in-out infinite;transform-origin:center}
 @keyframes wavePulse{0%,100%{opacity:1}50%{opacity:.6}}
 .wave-ring{animation:waveRing 2s ease-in-out infinite}
@@ -384,7 +385,8 @@ div:hover>.avatar-overlay{opacity:1}
   .tab-btn{padding:7px 12px;font-size:.72rem;border-radius:14px}
   .pg-item{min-width:68px;max-width:88px;padding:10px 6px}
   .svg-wave-section{padding:12px;border-radius:16px}
-  .svg-wave-title{font-size:.75rem}
+  .svg-wave-title{font-size:.9rem}
+  .svg-wave-subtitle{font-size:.7rem}
   body{font-size:1rem}
 }
 </style>
@@ -1582,7 +1584,8 @@ function fWave(){
     <div class="ph"><div class="ph-sym">${PHASES[ph.phaseId].sym}</div>
       <div class="ph-i"><h3>${tooltip(_pn(ph.phaseId),_pn(ph.phaseId),_('wave_tooltip'))}</h3><p>${_pd(ph.phaseId)}</p></div></div>
     <div class="svg-wave-section">
-      <div class="svg-wave-title">📊 ${_('wave_forecast')} — ${ph.day} ${_('day_word')} ${ph.cl}</div>
+      <div class="svg-wave-title">📊 Моя волна — ${ph.day} день из ${ph.cl}</div>
+      <div class="svg-wave-subtitle">${_pn(ph.phaseId)} · ${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])}</div>
       ${renderWaveSVG(ph, S.curUser)}
     </div>
     <div class="pd"><span>${_('wave_day_short',ph.day,ph.cl)}</span><span>📍 ${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])} — ${_(['wave_seed','wave_sprout','wave_flower','wave_fall'][ph.phaseId])}</span></div>
