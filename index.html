@@ -198,7 +198,9 @@ div:hover>.avatar-overlay{opacity:1}
 .pd{display:flex;justify-content:space-between;margin-top:8px;font-size:.85rem;color:var(--text3);font-weight:500}
 
 /* ====== SVG WAVE ====== */
-.svg-wave{width:100%;height:200px;margin:8px 0 0;overflow:visible}
+.svg-wave{width:100%;height:220px;margin:8px 0 0;overflow:visible}
+.svg-wave-section{background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(245,240,232,.6));border-radius:20px;padding:18px;border:1.5px solid var(--border);box-shadow:0 2px 6px rgba(44,40,37,.06),inset 0 1px 0 rgba(255,255,255,.9);margin-bottom:14px}
+.svg-wave-title{font-weight:700;font-size:.85rem;color:var(--roseD);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em;display:flex;align-items:center;gap:6px}
 .wave-dot{animation:wavePulse 2s ease-in-out infinite;transform-origin:center}
 @keyframes wavePulse{0%,100%{opacity:1}50%{opacity:.6}}
 .wave-ring{animation:waveRing 2s ease-in-out infinite}
@@ -1423,11 +1425,11 @@ function waveY(x,W){
   return 80;
 }
 function renderWaveSVG(ph, uid){
-  const W=560,H=150,bn=WAVE_BN,by=WAVE_BY;
+  const W=700,H=180,bn=WAVE_BN,by=WAVE_BY;
   let fs=getUserFlowerSet(uid||S.curUser);
   let cols=fs.colors;
   let icons=fs.icons;
-  let svg=`<svg class="svg-wave" viewBox="0 0 ${W} ${H}">`;
+  let svg=`<svg class="svg-wave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">`;
   let startDate=S.cycle[uid||S.curUser];
   let cl=ph.cl||28;
   let dayW=W/cl;
@@ -1577,7 +1579,10 @@ function fWave(){
   let html=today+`<div class="pw">
     <div class="ph"><div class="ph-sym">${PHASES[ph.phaseId].sym}</div>
       <div class="ph-i"><h3>${tooltip(_pn(ph.phaseId),_pn(ph.phaseId),_('wave_tooltip'))}</h3><p>${_pd(ph.phaseId)}</p></div></div>
-    ${renderWaveSVG(ph, S.curUser)}
+    <div class="svg-wave-section">
+      <div class="svg-wave-title">📊 ${_('wave_forecast')} — ${ph.day} ${_('day_word')} ${ph.cl}</div>
+      ${renderWaveSVG(ph, S.curUser)}
+    </div>
     <div class="pd"><span>${_('wave_day_short',ph.day,ph.cl)}</span><span>📍 ${_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId])} — ${_(['wave_seed','wave_sprout','wave_flower','wave_fall'][ph.phaseId])}</span></div>
     ${renderPhaseGarden(ph, S.curUser)}
   </div>`;
