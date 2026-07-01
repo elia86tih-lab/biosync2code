@@ -148,6 +148,25 @@ input,button,select,textarea{font-family:inherit}
 .tab-btn:hover svg path,.tab-btn:hover svg circle,.tab-btn:hover svg rect,.tab-btn:hover svg line,.tab-btn:hover svg polyline,.tab-btn:hover svg polygon{fill:#FDE0C0;fill-opacity:.7}
 .tab-btn.act svg path,.tab-btn.act svg circle,.tab-btn.act svg rect,.tab-btn.act svg line,.tab-btn.act svg polyline,.tab-btn.act svg polygon{fill:#FDD5AE;fill-opacity:.8}
 
+/* ====== CYCLE TOOLTIPS ====== */
+.cycle-tip{position:relative;cursor:help}
+.cycle-tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:var(--card);color:var(--text);padding:10px 16px;border-radius:14px;font-size:.78rem;line-height:1.5;white-space:nowrap;pointer-events:none;opacity:0;transition:all .2s cubic-bezier(.25,.8,.25,1);box-shadow:0 6px 24px rgba(44,40,37,.15);border:1px solid var(--border);z-index:300;text-align:center;font-weight:500}
+.cycle-tip:hover::after{opacity:1;bottom:calc(100% + 6px)}
+.cycle-tip::before{content:'';position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--card);pointer-events:none;opacity:0;transition:all .2s cubic-bezier(.25,.8,.25,1);z-index:300}
+.cycle-tip:hover::before{opacity:1;bottom:calc(100%)}
+
+/* ====== TAB MENU BUTTON ====== */
+.tab-menu-fab{position:fixed;top:14px;right:14px;z-index:300;width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--rose),var(--roseD));border:none;color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(27,158,140,.3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;transition:all .25s cubic-bezier(.25,.8,.25,1)}
+.tab-menu-fab:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(27,158,140,.4)}
+.tab-menu-fab:active{transform:translateY(0);box-shadow:0 2px 8px rgba(27,158,140,.2)}
+.tab-menu-overlay{position:fixed;inset:0;z-index:299;background:rgba(0,0,0,.3);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:flex-end;padding:70px 16px 0}
+.tab-menu-overlay.show{display:flex}
+.tab-menu-panel{background:var(--card);border-radius:20px;padding:16px;max-width:320px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.2);display:grid;grid-template-columns:1fr 1fr;gap:8px;animation:slideDown .2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.tab-menu-item{padding:12px;border-radius:14px;cursor:pointer;text-align:center;transition:all .2s;border:1.5px solid transparent;background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(245,240,232,.4))}
+.tab-menu-item:hover{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(253,220,181,.3));border-color:rgba(27,158,140,.15)}
+.tab-menu-item.act{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(253,213,177,.5));border-color:rgba(27,158,140,.2);color:var(--roseD);font-weight:700}
+
 /* ====== YANDEX ADS ====== */
 .ad-block{background:rgba(255,255,255,.5);border-radius:16px;padding:8px;margin:16px 0;text-align:center;border:1px solid var(--border);overflow:hidden;min-height:90px;display:flex;align-items:center;justify-content:center}
 .ad-block>div{width:100%}
@@ -508,6 +527,12 @@ input,button,select,textarea{font-family:inherit}
     <div id="ya-ad-female-top" class="ad-block"></div>
     <div id="df-content"></div>
   </div>
+</div>
+
+<!-- ====== TAB MENU FAB ====== -->
+<button class="tab-menu-fab" id="tab-menu-fab" onclick="toggleTabOverlay()" title="Меню вкладок"><i data-lucide="grid-3x3" class="lx"></i></button>
+<div class="tab-menu-overlay" id="tab-menu-overlay" onclick="if(event.target===this)toggleTabOverlay()">
+  <div class="tab-menu-panel" id="tab-menu-panel"></div>
 </div>
 
 <!-- ====== VOICE MODAL ====== -->
@@ -1005,6 +1030,8 @@ function navigate(page){
   if(page==='login'){setTimeout(checkRemembered,100)}
   if(page==='dash-female'&&S.curUser)renderFemaleDash();
   if(page==='dash-male'&&S.curUser)renderMaleDash();
+  let fab=document.getElementById('tab-menu-fab');
+  if(fab)fab.style.display=page.startsWith('dash-')?'flex':'none';
 }
 function toggleTabMenu(id){
   let el=document.getElementById(id);
@@ -1016,6 +1043,33 @@ function toggleTabMenu(id){
   } else {
     el.style.display='none';
   }
+}
+function toggleTabOverlay(){
+  let ov=document.getElementById('tab-menu-overlay');
+  if(!ov)return;
+  ov.classList.toggle('show');
+  if(ov.classList.contains('show'))renderTabMenu();
+}
+function renderTabMenu(){
+  let pn=document.getElementById('tab-menu-panel');
+  if(!pn)return;
+  let onFemale=document.getElementById('p-dash-female').classList.contains('active');
+  let onMale=document.getElementById('p-dash-male').classList.contains('active');
+  if(!onFemale&&!onMale)return;
+  let tabs,tabIcons,tabNames,activeTab,prefix,renderFn;
+  if(onFemale){
+    tabs=['wave','selfcare','sonya','couple','mood','notif','tariffs','settings'];
+    tabIcons=['waves','heart','message-circle','link','edit-3','bell','sparkles','settings'];
+    tabNames=[_('ftab_wave'),_('ftab_self'),_('ftab_sonya'),_('ftab_couple'),_('ftab_diary'),_('ftab_notifs'),_('ftab_plans'),_('ftab_settings')];
+    activeTab=S._fTab||'wave';prefix='f';renderFn='renderFemaleDash';
+  }else{
+    tabs=['compass','strategy','sonya','history','notif','tariffs','settings'];
+    tabIcons=['compass','clipboard-list','message-circle','bar-chart-3','bell','sparkles','settings'];
+    tabNames=[_('mtab_compass'),_('mtab_strategy'),_('mtab_sonya'),_('mtab_history'),_('mtab_tips'),_('mtab_plans'),_('mtab_settings')];
+    activeTab=S._mTab||'compass';prefix='m';renderFn='renderMaleDash';
+  }
+  pn.innerHTML=tabs.map(function(t,i){return '<div class="tab-menu-item '+(t===activeTab?'act':'')+'" onclick="S._'+prefix+'Tab='+String.fromCharCode(39)+t+String.fromCharCode(39)+';'+renderFn+'();toggleTabOverlay()"><span style="font-size:1.4rem;display:block">'+ic(tabIcons[i],'lx-lg')+'</span><span style="font-size:.72rem">'+tabNames[i]+'</span></div>'}).join('');
+  lucide.createIcons(pn);
 }
 function show(id){document.getElementById(id).style.display=''}
 function hide(id){document.getElementById(id).style.display='none'}
@@ -1452,7 +1506,7 @@ function renderPhaseGarden(ph, uid){
   let days=[{s:1,e:5},{s:6,e:13},{s:14,e:16},{s:17,e:ph.cl}];
   for(let i=0;i<4;i++){
     let act=i===ph.phaseId;
-    html+=`<div class="pg-item ${act?'act':''}" style="${act?`background:${fs.colors[i]}15;box-shadow:0 2px 8px ${fs.colors[i]}30`:''}">
+    html+=`<div class="pg-item ${act?'act':''} cycle-tip" data-tip="${_pn(i)}: ${_pd(i).substring(0,50)}…" style="${act?`background:${fs.colors[i]}15;box-shadow:0 2px 8px ${fs.colors[i]}30`:''}">
       <span class="pg-icon">${fs.icons[i]}</span>
       <span class="pg-name">${WAVE_NAMES[i]}</span>
       <span class="pg-name sub">${WAVE_DESC[i]}</span>
@@ -1473,7 +1527,7 @@ function fWave(){
     <div style="font-size:.85rem;font-weight:700;color:var(--roseD);margin-bottom:10px;letter-spacing:.03em;text-transform:uppercase">${_('wave_today')}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div style="background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center">
-        <div style="font-size:2rem">${ph?PHASES[ph.phaseId].sym:'🌊'}</div>
+        <div style="font-size:2rem" class="cycle-tip" data-tip="${_pn(ph.phaseId)}: ${_pd(ph.phaseId).substring(0,60)}…">${ph?PHASES[ph.phaseId].sym:'🌊'}</div>
         <div style="font-size:.78rem;color:var(--text2);margin-top:4px;font-weight:600">${ph?_(['wave_rest','wave_grow','wave_bloom','wave_fade'][ph.phaseId]):'—'} ${_('phase_word')}</div>
       </div>
       <div style="background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);text-align:center">
