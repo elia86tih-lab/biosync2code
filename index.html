@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="yandex-verification" content="REPLACE_WITH_YANDEX_VERIFICATION_CODE">
 <title>BioSync — Код пары</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231B9E8C'/%3E%3Cstop offset='1' stop-color='%2315857A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23F7F3EE'/%3E%3Cpath d='M12 40 Q20 28 32 36 T52 30' fill='none' stroke='url(%23g)' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M12 44 Q20 32 32 40 T52 34' fill='none' stroke='%2300F0FF' stroke-width='2.5' stroke-linecap='round' opacity='.5'/%3E%3Ccircle cx='32' cy='24' r='6' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='24' r='3' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231B9E8C'/%3E%3Cstop offset='1' stop-color='%2315857A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23F7F3EE'/%3E%3Cpath d='M12 40 Q20 28 32 36 T52 30' fill='none' stroke='url(%23g)' stroke-width='3.5' stroke-linecap='round'/%3E%3Cpath d='M12 44 Q20 32 32 40 T52 34' fill='none' stroke='%2300F0FF' stroke-width='2.5' stroke-linecap='round' opacity='.5'/%3E%3Ccircle cx='32' cy='24' r='6' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='24' r='3' fill='%23fff'/%3E%3C/svg%3E">
@@ -2629,7 +2630,13 @@ function fSettings(g){
     <!-- Yandex Ads -->
     <div class="rc" style="margin-bottom:16px;text-align:left">
       <div style="font-weight:600;font-size:.95rem;margin-bottom:4px">📢 Реклама Яндекса</div>
-      <p style="color:var(--text2);font-size:.78rem;margin-bottom:10px;line-height:1.5">Выплаты на счёт: <strong>40817810320000814885</strong> (Яндекс Банк).<br>Получите ID блоков в <a href="https://partner.yandex.ru" target="_blank" style="color:var(--roseD);text-decoration:underline">Рекламной сети Яндекса</a> и вставьте их ниже.</p>
+      <p style="color:var(--text2);font-size:.78rem;margin-bottom:10px;line-height:1.5">
+        Выплаты: счёт <strong>40817810320000814885</strong> (Яндекс Банк)<br>
+        <a href="https://partner.yandex.ru" target="_blank" style="color:var(--roseD);text-decoration:underline;font-weight:600">1. Откройте partner.yandex.ru → зарегистрируйтесь</a><br>
+        2. Добавьте площадку: <strong style="color:var(--roseD)">elia86tih-lab.github.io/biosync2code</strong><br>
+        3. Создайте 4 блока (формат «Лента» и «Floor Ad»)<br>
+        4. Вставьте их ID ниже и нажмите «Сохранить»
+      </p>
       <div id="ya-ad-settings"></div>
     </div>
 
@@ -3457,7 +3464,7 @@ function renderYandexAd(blockId,containerId){
   var el=document.getElementById(containerId);
   if(!el)return;
   if(blockId.indexOf('XXXXXX')>=0){
-    el.innerHTML='<div class="ad-placeholder"><span>📢</span><span>Яндекс.Реклама — укажите R-A-ID в настройках</span></div>';
+    el.innerHTML='<div class="ad-placeholder" style="cursor:pointer" onclick="window.open(String.fromCharCode(39)+https://partner.yandex.ru'+String.fromCharCode(39)+')"><span>📢</span><span>Подключите Рекламу Яндекса за 3 мин → выплаты на счёт 40817810320000814885</span><span style="font-size:.65rem;color:var(--rose);font-weight:600">Настроить</span></div>';
     return;
   }
   el.innerHTML='<div id="yandex_rtb_'+blockId+'" style="width:100%"></div>';
@@ -3465,7 +3472,7 @@ function renderYandexAd(blockId,containerId){
     window.yaContextCb.push(function(){
       Ya.Context.AdvManager.render({blockId:blockId,renderTo:'yandex_rtb_'+blockId,type:'feed',platform:'touch'});
     });
-  }catch(e){}
+  }catch(e){console.error('Ya ad error:',e)}
 }
 function renderAllAds(){
   YA_ADS.blocks.forEach(function(b){renderYandexAd(b.id,b.container)});
