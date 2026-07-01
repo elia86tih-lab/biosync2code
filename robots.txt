@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /data.json
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: YandexImages
+Allow: /
+
+User-agent: YandexDirect
+Allow: /
+
+User-agent: YandexMetrika
+Allow: /
+
+Sitemap: https://elia86tih-lab.github.io/biosync2code/sitemap.xml
