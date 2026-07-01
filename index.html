@@ -2812,8 +2812,12 @@ function sonyaMediation(topic){
   return {ctx,herTip:t.her,himTip:t.him};
 }
 
-// ====== SONYA AI ENGINE (Pollinations.AI — free, no key, CORS) ======
+// ====== SONYA AI ENGINE (YandexGPT primary + Pollinations.AI fallback) ======
+const YA_GPT_KEY=(function(){try{return localStorage.getItem('biosync_yagpt_key')||''}catch(e){return''}})();
+const YA_GPT_FOLDER=(function(){try{return localStorage.getItem('biosync_yagpt_fid')||''}catch(e){return''}})();
+const YA_GPT_URL='https://llm.api.cloud.yandex.net/foundationModels/v1/completion';
 const POLLI_URL='https://text.pollinations.ai/openai';
+(function(){if(!localStorage.getItem('biosync_yagpt_key')){localStorage.setItem('biosync_yagpt_key','')}})();
 function buildSonyaContext(){
   let u=S.users.find(x=>x.id===S.curUser);
   if(!u)return '';
@@ -2867,16 +2871,32 @@ function buildSonyaContext(){
 async function sonyaAI(userMessage,history){
   let systemPrompt=buildSonyaContext();
   if(!systemPrompt)return null;
-  let messages=[{role:'system',content:systemPrompt}];
+  let messages=[];
   if(history&&history.length){
     for(let i=0;i<history.length;i++){
       let h=history[i];
-      messages.push({role:h.role==='assistant'?'assistant':'user',content:h.text});
+      messages.push({role:h.role==='assistant'?'assistant':'user',text:h.text});
     }
   }
-  messages.push({role:'user',content:userMessage});
+  messages.push({role:'user',text:userMessage});
+  // Try YandexGPT first
+  let yk=localStorage.getItem('biosync_yagpt_key')||'';
+  let yf=localStorage.getItem('biosync_yagpt_fid')||'';
+  if(yk&&yf){
+    try{
+      let resp=await fetch(YA_GPT_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Api-Key '+yk},body:JSON.stringify({modelUri:'gpt://'+yf+'/yandexgpt-lite',completionOptions:{stream:false,temperature:0.85,maxTokens:'1000'},messages:[{role:'system',text:systemPrompt}].concat(messages)})});
+      if(resp.ok){
+        let data=await resp.json();
+        let text=data&&data.result&&data.result.alternatives&&data.result.alternatives[0]&&data.result.alternatives[0].message&&data.result.alternatives[0].message.text;
+        if(text)return text;
+      }
+    }catch(e){console.error('YandexGPT error, falling back:',e)}
+  }
+  // Fallback: Pollinations.AI
+  let pmessages=[{role:'system',content:systemPrompt}];
+  for(let i=0;i<messages.length;i++){pmessages.push({role:messages[i].role,content:messages[i].text})}
   try{
-    let resp=await fetch(POLLI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:messages,temperature:0.85})});
+    let resp=await fetch(POLLI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:pmessages,temperature:0.85})});
     if(!resp.ok)return null;
     let data=await resp.json();
     let text=data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
@@ -3133,23 +3153,16 @@ function fSonya(){
   }
 
   if(mode==='soothe'){
-    let s=rnd(SOOTHE);
-    return `<div style="max-width:600px;margin:0 auto;text-align:left">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-        <button class="btn btn-g btn-sm" onclick="delete S._sonyaMode;renderFemaleDash()" style="padding:6px 10px">←</button>
-        <span style="font-weight:700;font-size:1rem">🆘 SOS-успокоение</span>
-      </div>
-      <div style="background:var(--bg);border-radius:20px;padding:24px;text-align:center;margin-bottom:12px">
-        <div style="font-size:3rem;margin-bottom:8px">${s.em}</div>
-        <div style="font-weight:700;font-size:1.05rem;margin-bottom:4px">${s.name}</div>
-        <p style="font-size:.85rem;color:var(--text2);line-height:1.6">${s.desc}</p>
-        <button class="btn btn-p btn-sm mt-2" onclick="alert('🧘 Практика запущена. Дышите спокойно.')">▶ Начать</button>
-        <button class="btn btn-g btn-sm mt-2" onclick="renderFemaleDash()" style="margin-left:8px">🔄 Другую</button>
-        <button class="btn btn-s btn-sm mt-2" onclick="S._sonyaMode='soothe-ball';renderFemaleDash()" style="margin-left:8px">u{1F631} u{414}u{44B}u{445}u{430}u{43D}u{438}u{435}</button>
-      </div>
-      <p style="font-size:.75rem;color:var(--text3);text-align:center">${ph?`🌊 ${WAVE_NAMES[ph.phaseId]} фаза — ${['отдыхай','действуй','общайся','замедляйся'][ph.phaseId]}.`:''}</p>
-    </div>`;
+    let cards=SOOTHE.map(function(s,i){
+      let modes=['soothe-ball','soothe-ground','soothe-scan','soothe-tea'];
+      let hints=['Дыхательный шар с таймером','Визуализация органов чувств','Сканирование напряжения','Ритуал заваривания'];
+      return '<div class="rc" style="padding:16px;text-align:center;cursor:pointer" onclick="S._sonyaMode='+String.fromCharCode(39)+modes[i]+String.fromCharCode(39)+';renderFemaleDash()"><span style="font-size:2rem;display:block;margin-bottom:6px">'+s.em+'</span><div style="font-weight:600;font-size:.85rem;margin-bottom:2px">'+s.name+'</div><div style="font-size:.72rem;color:var(--text3)">'+hints[i]+'</div></div>';
+    });
+    return '<div style="max-width:600px;margin:0 auto;text-align:left"><div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><button class="btn btn-g btn-sm" onclick="delete S._sonyaMode;renderFemaleDash()" style="padding:6px 10px">←</button><span style="font-weight:700;font-size:1rem">🆘 SOS-успокоение</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">'+cards.join('')+'</div>'+(ph?'<p style="font-size:.75rem;color:var(--text3);text-align:center">🌊 '+WAVE_NAMES[ph.phaseId]+' фаза — '+['отдыхай','действуй','общайся','замедляйся'][ph.phaseId]+'.</p>':'')+'</div>';
   }
+  if(mode==='soothe-ground'){return fSonyaSootheGround()}
+  if(mode==='soothe-scan'){return fSonyaSootheScan()}
+  if(mode==='soothe-tea'){return fSonyaSootheTea()}
 
   if(mode==='challenge'){
     let challenges=[
@@ -3269,8 +3282,8 @@ function fSonyaBreathBall(ph){
   html+='<div id="breath-counter" style="font-size:1.5rem;font-weight:800;color:var(--roseD);margin-bottom:8px;font-variant-numeric:tabular-nums">4</div>';
   html+='<div id="breath-label" style="font-size:.85rem;color:var(--text2);margin-bottom:16px">\u0412\u0434\u043E\u0445\u043D\u0438\u0442\u0435 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u043E</div>';
   html+='<div style="display:flex;gap:8px;justify-content:center">';
-  html+='<button class="btn btn-p btn-sm" id="breath-start-btn" onclick="startBreathing()">\u25B6 \u041D\u0430\u0447\u0430\u0442\u044C</button>';
-  html+='<button class="btn btn-g btn-sm" onclick="stopBreathing()">\u23F9 \u0421\u0442\u043E\u043F</button>';
+  html+='<button class="btn btn-p btn-sm" id="breath-start-btn" onclick="startBreathing()">▶ Начать</button>';
+  html+='<button class="btn btn-g btn-sm" onclick="stopBreathing()">⏹ Стоп</button>';
   html+='</div>';
   html+='<div style="margin-top:16px;font-size:.75rem;color:var(--text3)">\u0426\u0438\u043A\u043B: \u0432\u0434\u043E\u0445 4\u0441 \u2014 \u0437\u0430\u0434\u0435\u0440\u0436\u043A\u0430 4\u0441 \u2014 \u0432\u044B\u0434\u043E\u0445 4\u0441 \u2014 \u0437\u0430\u0434\u0435\u0440\u0436\u043A\u0430 4\u0441</div>';
   html+='</div>';
@@ -3286,12 +3299,21 @@ let _breathTimer=null,_breathPhase=0,_breathCount=4;
 function startBreathing(){
   stopBreathing();
   _breathPhase=0;_breathCount=4;
+  let b=document.getElementById('breath-ball');
+  let t=document.getElementById('breath-text');
+  let l=document.getElementById('breath-label');
+  let c=document.getElementById('breath-counter');
+  let s=document.getElementById('breath-start-btn');
+  if(b)b.style.transition='all 1s ease-in-out';
+  if(s){s.textContent='⏸ Пауза';s.onclick=function(){if(_breathTimer){stopBreathing();s.textContent='▶ Начать';s.onclick=startBreathing}else startBreathing()}}
   _doBreathStep();
 }
 function stopBreathing(){
   if(_breathTimer){clearInterval(_breathTimer);_breathTimer=null}
   let b=document.getElementById('breath-ball');
-  if(b){b.style.width='60px';b.style.height='60px';b.style.background='radial-gradient(circle,#1B9E8C,#15857A)'}
+  if(b){b.style.width='60px';b.style.height='60px';b.style.background='radial-gradient(circle,#1B9E8C,#15857A)';b.style.transition='all 1s ease-in-out'}
+  let s=document.getElementById('breath-start-btn');
+  if(s){s.textContent='▶ Начать';s.onclick=startBreathing}
 }
 function _doBreathStep(){
   let b=document.getElementById('breath-ball');
@@ -3299,42 +3321,132 @@ function _doBreathStep(){
   let c=document.getElementById('breath-counter');
   let l=document.getElementById('breath-label');
   if(!b)return;
-  var Q=String.fromCharCode(39);
+  if(_breathTimer){clearInterval(_breathTimer);_breathTimer=null}
+  b.style.transition='all 1s ease-in-out';
   if(_breathPhase===0){
-    b.style.width='160px';b.style.height='160px';
-    b.style.background='radial-gradient(circle,#00F0FF,#1B9E8C)';
-    if(t)t.textContent='\u0412\u0414\u041E\u0425';
-    if(l)l.textContent='\u0412\u0434\u043E\u0445\u043D\u0438\u0442\u0435 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u043E';
+    b.style.width='160px';b.style.height='160px';b.style.background='radial-gradient(circle,#00F0FF,#1B9E8C)';
+    if(t)t.textContent='ВДОХ';if(l)l.textContent='Вдохните медленно';
   }else if(_breathPhase===1){
-    b.style.width='160px';b.style.height='160px';
-    b.style.background='radial-gradient(circle,#7DD3FC,#0EA5E9)';
-    if(t)t.textContent='\u0417\u0410\u0414\u0415\u0420\u0416\u041A\u0410';
-    if(l)l.textContent='\u0417\u0430\u0434\u0435\u0440\u0436\u0438\u0442\u0435 \u0434\u044B\u0445\u0430\u043D\u0438\u0435';
+    b.style.width='160px';b.style.height='160px';b.style.background='radial-gradient(circle,#7DD3FC,#0EA5E9)';
+    if(t)t.textContent='ДЕРЖИ';if(l)l.textContent='Задержите дыхание';
   }else if(_breathPhase===2){
-    b.style.width='60px';b.style.height='60px';
-    b.style.background='radial-gradient(circle,#E0A8A8,#C08888)';
-    if(t)t.textContent='\u0412\u042B\u0414\u041E\u0425';
-    if(l)l.textContent='\u0412\u044B\u0434\u043E\u0445\u043D\u0438\u0442\u0435 \u043C\u0435\u0434\u043B\u0435\u043D\u043D\u043E';
+    b.style.width='60px';b.style.height='60px';b.style.background='radial-gradient(circle,#E0A8A8,#C08888)';
+    if(t)t.textContent='ВЫДОХ';if(l)l.textContent='Выдохните медленно';
   }else if(_breathPhase===3){
-    b.style.width='60px';b.style.height='60px';
-    b.style.background='radial-gradient(circle,#A8C4A8,#88A888)';
-    if(t)t.textContent='\u0417\u0410\u0414\u0415\u0420\u0416\u041A\u0410';
-    if(l)l.textContent='\u041E\u0442\u0434\u044B\u0445';
+    b.style.width='60px';b.style.height='60px';b.style.background='radial-gradient(circle,#A8C4A8,#88A888)';
+    if(t)t.textContent='ПАУЗА';if(l)l.textContent='Отдых';
   }
-  _breathCount=4;
-  if(c)c.textContent=_breathCount;
+  _breathCount=4;if(c)c.textContent=_breathCount;
   _breathTimer=setInterval(function(){
-    _breathCount--;
-    if(c)c.textContent=_breathCount;
-    if(_breathCount<=0){
-      clearInterval(_breathTimer);
-      _breathPhase=(_breathPhase+1)%4;
-      _doBreathStep();
-    }
+    _breathCount--;if(c)c.textContent=_breathCount;
+    if(_breathCount<=0){clearInterval(_breathTimer);_breathPhase=(_breathPhase+1)%4;_doBreathStep()}
   },1000);
 }
 
 }
+
+function fSonyaSootheGround(){
+  return `<div style="max-width:600px;margin:0 auto;text-align:left">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-g btn-sm" onclick="S._sonyaMode='soothe';renderFemaleDash()" style="padding:6px 10px">←</button>
+      <span style="font-weight:700;font-size:1rem">🌍 Заземление</span>
+    </div>
+    <div style="background:var(--bg);border-radius:20px;padding:24px;text-align:center;margin-bottom:12px">
+      <svg viewBox="0 0 200 200" style="width:200px;height:200px;margin:0 auto 20px">
+        <circle cx="100" cy="100" r="90" fill="none" stroke="var(--green)" stroke-width="1" opacity=".2"><animate attributeName="r" values="90;96;90" dur="4s" repeatCount="indefinite"/></circle>
+        <circle cx="100" cy="100" r="65" fill="none" stroke="var(--green)" stroke-width="2" opacity=".3"><animate attributeName="r" values="65;72;65" dur="3s" repeatCount="indefinite"/></circle>
+        <circle cx="100" cy="100" r="30" fill="var(--green)" opacity=".15"><animate attributeName="r" values="30;38;30" dur="2.5s" repeatCount="indefinite"/></circle>
+        <text x="100" y="106" text-anchor="middle" font-size="16" fill="var(--green)" font-weight="800">⏱</text>
+      </svg>
+      <div id="ground-step" style="font-size:1.6rem;font-weight:800;color:var(--roseD);margin-bottom:4px">5</div>
+      <div id="ground-label" style="font-size:.9rem;color:var(--text2);margin-bottom:16px">вещей, которые видите</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-p btn-sm" id="ground-start-btn" onclick="startGrounding()">▶ Начать</button>
+        <button class="btn btn-g btn-sm" onclick="stopGrounding()">⏹ Стоп</button>
+      </div>
+    </div>
+  </div>`;
+}
+let _groundTimer=null,_groundStep=0;
+let _groundData=[{n:5,label:'вещей, которые видите'},{n:4,label:'звуков, которые слышите'},{n:3,label:'ощущений тела'},{n:2,label:'запаха вокруг'},{n:1,label:'вкус во рту'}];
+function startGrounding(){stopGrounding();_groundStep=0;_doGroundStep()}
+function stopGrounding(){if(_groundTimer){clearTimeout(_groundTimer);_groundTimer=null}}
+function _doGroundStep(){
+  if(_groundStep>=_groundData.length)return;
+  let s=document.getElementById('ground-step');let l=document.getElementById('ground-label');
+  let d=_groundData[_groundStep];
+  if(s)s.textContent=d.n;if(l)l.textContent=d.label;
+  _groundTimer=setTimeout(function(){_groundStep++;if(_groundStep<_groundData.length){_doGroundStep()}else{if(s)s.textContent='✅';if(l)l.textContent='Вы здесь. Всё хорошо.'}},5000);
+}
+
+function fSonyaSootheScan(){
+  return `<div style="max-width:600px;margin:0 auto;text-align:left">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-g btn-sm" onclick="S._sonyaMode='soothe';renderFemaleDash()" style="padding:6px 10px">←</button>
+      <span style="font-weight:700;font-size:1rem">🧘 Сканирование тела</span>
+    </div>
+    <div style="background:var(--bg);border-radius:20px;padding:24px;text-align:center;margin-bottom:12px">
+      <svg viewBox="0 0 80 200" style="width:80px;height:200px;margin:0 auto 16px">
+        <ellipse cx="40" cy="30" rx="14" ry="18" fill="none" stroke="var(--lav)" stroke-width="2">
+          <animate attributeName="opacity" values=".5;1;.5" dur="2s" repeatCount="indefinite"/>
+        </ellipse>
+        <line x1="40" y1="48" x2="40" y2="100" stroke="var(--text3)" stroke-width="2" opacity=".3"/>
+        <line x1="40" y1="65" x2="18" y2="55" stroke="var(--text3)" stroke-width="2" opacity=".3"/>
+        <line x1="40" y1="65" x2="62" y2="55" stroke="var(--text3)" stroke-width="2" opacity=".3"/>
+        <line x1="40" y1="100" x2="20" y2="150" stroke="var(--text3)" stroke-width="2" opacity=".3"/>
+        <line x1="40" y1="100" x2="60" y2="150" stroke="var(--text3)" stroke-width="2" opacity=".3"/>
+        <circle cx="40" cy="28" r="0" fill="var(--lav)" opacity="0.8"><animate attributeName="r" values="0;10;0" dur="3s" repeatCount="indefinite"/></circle>
+      </svg>
+      <div id="scan-label" style="font-size:.9rem;color:var(--text2);margin-bottom:16px">Мысленно пройдите от макушки до пят</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-p btn-sm" id="scan-start-btn" onclick="startScan()">▶ Начать</button>
+        <button class="btn btn-g btn-sm" onclick="stopScan()">⏹ Стоп</button>
+      </div>
+    </div>
+  </div>`;
+}
+let _scanTimer=null,_scanIdx=0;
+let _scanParts=['макушка','лоб','глаза','челюсть','шея','плечи','грудь','живот','поясница','бёдра','колени','голени','стопы'];
+function startScan(){stopScan();_scanIdx=0;_doScanStep()}
+function stopScan(){if(_scanTimer){clearTimeout(_scanTimer);_scanTimer=null}}
+function _doScanStep(){
+  if(_scanIdx>=_scanParts.length)return;
+  let l=document.getElementById('scan-label');
+  if(l)l.textContent='Где напряжение? — '+_scanParts[_scanIdx]+'…';
+  _scanTimer=setTimeout(function(){_scanIdx++;if(_scanIdx<_scanParts.length){_doScanStep()}else{if(l)l.textContent='Сканирование завершено. Лёгкость в теле.';setTimeout(function(){},3000)}},3000);
+}
+
+function fSonyaSootheTea(){
+  return `<div style="max-width:600px;margin:0 auto;text-align:left">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-g btn-sm" onclick="S._sonyaMode='soothe';renderFemaleDash()" style="padding:6px 10px">←</button>
+      <span style="font-weight:700;font-size:1rem">🍵 Чашка чая</span>
+    </div>
+    <div style="background:var(--bg);border-radius:20px;padding:24px;text-align:center;margin-bottom:12px">
+      <svg viewBox="0 0 160 160" style="width:160px;height:160px;margin:0 auto 20px">
+        <ellipse cx="80" cy="135" rx="65" ry="6" fill="var(--border)" opacity=".4"/>
+        <path d="M25 55 L35 130 Q80 140 125 130 L135 55 Z" fill="var(--roseD)" opacity=".15" stroke="var(--rose)" stroke-width="1.5"/>
+        <ellipse cx="80" cy="55" rx="55" ry="10" fill="var(--roseD)" opacity=".25" stroke="var(--rose)" stroke-width="1.5"/>
+        <ellipse cx="80" cy="58" rx="45" ry="7" fill="#D4A060" opacity=".6"><animate attributeName="ry" values="7;3;7" dur="3s" repeatCount="indefinite"/></ellipse>
+        <rect x="128" y="68" width="18" height="28" rx="7" fill="none" stroke="var(--rose)" stroke-width="1.5" opacity=".3"/>
+        <g opacity=".25"><animate attributeName="opacity" values=".1;.35;.1" dur="2s" repeatCount="indefinite"/>
+          <path d="M58 47 Q68 37 78 47" fill="none" stroke="#fff" stroke-width="1"/>
+          <path d="M73 50 Q83 40 93 50" fill="none" stroke="#fff" stroke-width="1"/>
+        </g>
+      </svg>
+      <div id="tea-label" style="font-size:.9rem;color:var(--text2);margin-bottom:16px">Заварите травяной чай. Держите кружку двумя руками.</div>
+      <div id="tea-timer" style="font-size:1.8rem;font-weight:800;color:var(--roseD);margin-bottom:8px;display:none">3:00</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-p btn-sm" id="tea-start-btn" onclick="startTeaTimer()">▶ 3 минуты тишины</button>
+        <button class="btn btn-g btn-sm" onclick="stopTeaTimer()">⏹ Стоп</button>
+      </div>
+    </div>
+  </div>`;
+}
+let _teaTimer=null,_teaSec=180;
+function startTeaTimer(){stopTeaTimer();_teaSec=180;let d=document.getElementById('tea-timer');if(d)d.style.display='block';let l=document.getElementById('tea-label');if(l)l.textContent='Тишина. Держите кружку двумя руками.';_doTeaTick()}
+function stopTeaTimer(){if(_teaTimer){clearTimeout(_teaTimer);_teaTimer=null}let d=document.getElementById('tea-timer');if(d)d.style.display='none';let l=document.getElementById('tea-label');if(l)l.textContent='Заварите травяной чай. Держите кружку двумя руками.'}
+function _doTeaTick(){let d=document.getElementById('tea-timer');let l=document.getElementById('tea-label');_teaSec--;if(d){let m=Math.floor(_teaSec/60);let s=_teaSec%60;d.textContent=m+':'+(s<10?'0':'')+s};if(_teaSec<=0){if(l)l.textContent='Чай готов. Сделайте глоток и улыбнитесь ☺';if(d)d.style.display='none';stopTeaTimer();return}_teaTimer=setTimeout(function(){_doTeaTick()},1000)}
 
 function startChallenge(title){
   S._activeChallenge={t:title,start:Date.now(),daysMarked:[]};
