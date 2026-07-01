@@ -1939,6 +1939,13 @@ function mCompass(){
     let fs=getUserFlowerSet(cp.fId);
     let tips=(M_TIPS[ph.phaseId]||[]).filter(t=>t.c==='');
     let mainTip=tips.length?tips[0].b:'Будь рядом — это лучшее, что ты можешь сделать сегодня.';
+    // Compass visualization
+    let compassDeg=[0,90,180,270][ph.phaseId]; // rotate based on phase
+    let compassSVG='<div class="svg-wave-section" style="text-align:center;margin-bottom:20px"><div class="svg-wave-title">🧭 Компас партнерши</div><svg viewBox="0 0 300 300" style="width:100%;max-width:300px;height:auto" xmlns="http://www.w3.org/2000/svg"><defs>'+cols.map(function(c,i){return'<linearGradient id="cg'+i+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+c+'" stop-opacity=".9"/><stop offset="1" stop-color="'+c+'" stop-opacity=".4"/></linearGradient>'}).join('')+'</defs><circle cx="150" cy="150" r="135" fill="none" stroke="var(--border)" stroke-width="2"/><circle cx="150" cy="150" r="120" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,4" opacity=".5"/>';
+    for(let i=0;i<4;i++){let a1=(i*90-45)*Math.PI/180;let a2=((i+1)*90-45)*Math.PI/180;let r=115;let x1=150+r*Math.cos(a1);let y1=150+r*Math.sin(a1);let x2=150+r*Math.cos(a2);let y2=150+r*Math.sin(a2);let large=i===ph.phaseId?1:0;compassSVG+='<path d="M150 150 L'+x1+' '+y1+' A115 115 0 '+large+' 1 '+x2+' '+y2+' Z" fill="url(#cg'+i+')" opacity="'+(i===ph.phaseId?'.6':'.2')+'"/>'}
+    compassSVG+='<circle cx="150" cy="150" r="60" fill="var(--card)"/><circle cx="150" cy="150" r="55" fill="none" stroke="var(--border)" stroke-width="1"/><circle cx="150" cy="150" r="8" fill="'+cols[ph.phaseId]+'"/><line x1="150" y1="150" x2="150" y2="90" stroke="'+cols[ph.phaseId]+'" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="'+compassDeg+'" to="'+(compassDeg+360)+'" dur="20s" repeatCount="indefinite"/></line>';
+    for(let i=0;i<4;i++){let a=(i*90-90)*Math.PI/180;let r=100;let tx=150+r*Math.cos(a);let ty=150+r*Math.sin(a)+4;compassSVG+='<text x="'+tx+'" y="'+ty+'" text-anchor="middle" font-size="11" fill="var(--text2)" font-weight="'+(i===ph.phaseId?'800':'400')+'">'+icons[i]+'</text>'}
+    compassSVG+='<text x="150" y="155" text-anchor="middle" font-size="18" font-weight="800" fill="'+cols[ph.phaseId]+'">'+ph.day+'</text><text x="150" y="172" text-anchor="middle" font-size="9" fill="var(--text3)">день из '+ph.cl+'</text></svg></div>';
     let today=`<div style="background:linear-gradient(135deg,rgba(143,191,168,.08),rgba(224,168,168,.06));border-radius:20px;padding:18px 20px;margin-bottom:20px;border:1px solid rgba(143,191,168,.15)">
       <div style="font-size:.85rem;font-weight:700;color:var(--green);margin-bottom:10px;letter-spacing:.03em;text-transform:uppercase">${_('wave_today')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -1955,7 +1962,7 @@ function mCompass(){
         ${mainTip}
       </div>
     </div>`;
-    let html=today+`<div class="ps-bar conn"><span>💞</span><span>Подключен к ${fu?fu.name:'партнерше'}</span></div>
+    let html=compassSVG+today+`<div class="ps-bar conn"><span>💞</span><span>Подключен к ${fu?fu.name:'партнерше'}</span></div>
     <div class="pw">
     <div class="ph"><div class="ph-sym" style="font-size:2rem">${fs.icons[ph.phaseId]}</div>
       <div class="ph-i"><h3>${_(_PKN.cn[ph.phaseId])}</h3><p>${_pd(ph.phaseId)}${priv.showDay?' · День '+ph.day:''}</p></div></div>
