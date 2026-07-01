@@ -1606,23 +1606,14 @@ function fWave(){
       <div style="font-size:.72rem;color:var(--roseD);margin-top:3px;line-height:1.4">💡 ${phaseRecos[i].rel}</div></div></div>`;
   });
   html+=`</div>`;
-  // Sonya mini-widget
-  html+=`<div style="background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(245,240,232,.7));border-radius:24px;padding:24px;margin-bottom:16px;border:1.5px solid var(--border);box-shadow:0 2px 8px rgba(44,40,37,.06),inset 0 1px 0 rgba(255,255,255,.9)">
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
-      <div style="position:relative;flex-shrink:0">
-        <img src="sonya.jpg" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid var(--cyan);box-shadow:0 0 20px rgba(0,240,255,.35)">
-        <span style="position:absolute;bottom:0;right:0;width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid #fff"></span>
-      </div>
-      <div style="flex:1"><div style="font-weight:800;font-size:.95rem">Соня</div><div style="font-size:.75rem;color:var(--text3)">Ваш ИИ-психолог · online</div></div>
-      <button class="btn btn-s btn-sm" onclick="S._fTab='sonya';renderFemaleDash()" style="padding:6px 14px;font-size:.72rem">Открыть</button>
-    </div>
-    <div style="background:var(--bg);border-radius:16px;padding:14px 16px;font-size:.82rem;color:var(--text2);line-height:1.6;margin-bottom:12px;min-height:48px" id="sonya-mini-bubble">${_('sonya_chat_desc')} 💬</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input type="text" id="sonya-mini-input" placeholder="Спросите Соню…" style="flex:1;padding:12px 16px;border:1.5px solid var(--border);border-radius:14px;font-size:.85rem;background:var(--bg);color:var(--text);outline:none" onkeydown="if(event.key==='Enter'){sonyaMiniSend()}">
-      <button class="btn btn-p btn-sm" onclick="sonyaMiniSend()" style="padding:10px 18px;font-size:.85rem;border-radius:14px;white-space:nowrap">${_('sonya_send')}</button>
-      <button class="btn btn-s btn-sm" id="sonya-mini-mic" onclick="sonyaMiniVoice()" style="padding:10px 14px;font-size:.85rem;border-radius:14px;background:linear-gradient(135deg,rgba(0,240,255,.12),rgba(27,158,140,.08));border:1.5px solid var(--cyan);color:var(--roseD);white-space:nowrap" title="Голосовой ввод">🎤</button>
-    </div>
-  </div>`;
+  // Sonya full section
+  let savedMode=S._sonyaMode;
+  S._sonyaMode='home';
+  html+=fSonya();
+  S._sonyaMode=savedMode;
+  // Clean up any duplicate IDs from embedded Sonya
+  html=html.replace(/id="sonya-chat-input"/g,'id="sonya-chat-input-w"');
+  html=html.replace(/id="sonya-chat-send-btn"/g,'id="sonya-chat-send-btn-w"');
   return html;
 }
 function sonyaMiniSend(){
@@ -1716,12 +1707,18 @@ function fCouple(){
         </div>
       </div>
       <div class="ts mt-3" style="text-align:left">
-        <h3>📚 Библиотека статей</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="rc"><h4>💬 Я-высказывания</h4><p>Как говорить о чувствах без обвинений.</p></div>
-        <div class="rc"><h4>👂 Активное слушание</h4><p>Слышать, а не ждать ответа.</p></div>
-        <div class="rc" style="grid-column:1/-1"><h4>🤝 Управление конфликтами</h4><p>Как ссориться конструктивно.</p></div>
-        </div>
+        <h3>👁️ Как выглядит Компас партнера</h3>
+        <p style="font-size:.78rem;color:var(--text3);margin-bottom:8px">То, что видит ${mu?mu.name:'партнер'} в разделе «Компас» при текущих настройках:</p>
+        ${(()=>{let priv=getUserPriv(S.curUser);let ph=getPhase(S.curUser);let html2='<div style="background:var(--bg);border-radius:14px;padding:14px;border:1px solid var(--border);font-size:.78rem;line-height:1.7">';
+        html2+='<div style="font-weight:600;margin-bottom:4px">🧭 Компас партнерши</div>';
+        if(priv.showPhase&&ph){html2+='<div>🌊 Фаза: <strong>'+WAVE_NAMES[ph.phaseId]+'</strong></div>';html2+='<div>📅 '+_('wave_day_short',ph.day,ph.cl)+'</div>'}
+        else html2+='<div>🔒 Доступ к фазе ограничен</div>';
+        if(priv.showDay&&ph)html2+='<div>📆 День: <strong>'+ph.day+'</strong> из '+ph.cl+'</div>';
+        if(priv.showCareTips)html2+='<div>💡 Подсказки по заботе: <span style="color:var(--green)">✅ доступны</span></div>';
+        else html2+='<div>💡 Подсказки: <span style="color:var(--text3)">🚫 скрыты</span></div>';
+        if(priv.showMood)html2+='<div>😊 История настроения: <span style="color:var(--green)">✅ видна</span></div>';
+        else html2+='<div>😊 Настроение: <span style="color:var(--text3)">🚫 скрыто</span></div>';
+        html2+='</div>';return html2})()}
       </div>
     </div>`;
   }
